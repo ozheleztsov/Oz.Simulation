@@ -20,7 +20,7 @@ public sealed class SimObject : ISimObject
 
     public async Task InitializeAsync(ISimContext simContext)
     {
-        foreach (var (type, typedComponents) in _components)
+        foreach (var (_, typedComponents) in _components)
         {
             foreach (var component in typedComponents)
             {
@@ -31,7 +31,7 @@ public sealed class SimObject : ISimObject
 
     public async Task UpdateAsync(ISimContext simContext)
     {
-        foreach (var (type, typedComponents) in _components)
+        foreach (var (_, typedComponents) in _components)
         {
             foreach (var component in typedComponents)
             {
@@ -42,7 +42,7 @@ public sealed class SimObject : ISimObject
 
     public async Task DestroyAsync(ISimContext simContext)
     {
-        foreach (var (type, typedComponents) in _components)
+        foreach (var (_, typedComponents) in _components)
         {
             foreach (var component in typedComponents)
             {
@@ -83,14 +83,14 @@ public sealed class SimObject : ISimObject
         {
             throw new InvalidOperationException($"Impossible to create component of type {typeof(T).Name}");
         }
-        
+
         if (_components.TryGetValue(typeof(T), out var typedComponents))
         {
             typedComponents.Add(component);
         }
         else
         {
-            var components = new List<ISimComponent>() {component};
+            var components = new List<ISimComponent> {component};
             _components.TryAdd(typeof(T), components);
         }
 
@@ -104,6 +104,13 @@ public sealed class SimObject : ISimObject
             throw new ArgumentException(
                 $"Adding component failure. Component {instance.Id}:{instance.Name} already attached to object {instance.Owner.Id}:{instance.Owner.Name}");
         }
+
+        if (instance.Owner is null)
+        {
+            throw new ArgumentException(
+                $"Adding component failure. Component {instance.Id}:{instance.Name} doesn't have owner");
+        }
+
         if (_components.TryGetValue(typeof(T), out var existingComponents))
         {
             if (existingComponents.Any(existingComponent => ReferenceEquals(existingComponent, instance)))
@@ -111,18 +118,19 @@ public sealed class SimObject : ISimObject
                 throw new ArgumentException(
                     $"Adding component failure. Component {instance.Id}:{instance.Name} already attached to object {instance.Owner.Id}:{instance.Owner.Name}");
             }
+
             existingComponents.Add(instance);
         }
         else
         {
-            _components.TryAdd(typeof(T), new List<ISimComponent>() {instance});
+            _components.TryAdd(typeof(T), new List<ISimComponent> {instance});
         }
     }
 
     public IEnumerable<ISimComponent> GetComponents()
     {
         List<ISimComponent> allComponents = new();
-        foreach (var (type, components) in _components)
+        foreach (var (_, components) in _components)
         {
             allComponents.AddRange(components);
         }
@@ -141,20 +149,101 @@ public sealed class SimObject : ISimObject
         return components.Cast<T>().ToImmutableArray();
     }
 
-    public T? GetComponent<T>() where T : ISimComponent =>
-        throw new NotImplementedException();
+    public T? GetComponent<T>() where T : ISimComponent
+    {
+        if (!_components.ContainsKey(typeof(T)))
+        {
+            return default;
+        }
 
-    public ISimComponent? GetComponent(Guid id) =>
-        throw new NotImplementedException();
+        var typedComponents = _components[typeof(T)];
+        if (!typedComponents.Any())
+        {
+            return default;
+        }
 
-    public IEnumerable<ISimComponent> GetComponents(string name) =>
-        throw new NotImplementedException();
+        return (T)typedComponents.First();
+    }
 
-    public IEnumerable<T> GetComponents<T>(Func<T, bool> predicate) =>
-        throw new NotImplementedException();
+    public ISimComponent? GetComponent(Guid id)
+    {
+        foreach (var (_, typedComponents) in _components)
+        {
+            foreach (var component in typedComponents.Where(component => component.Id == id))
+            {
+                return component;
+            }
+        }
 
-    public IEnumerable<ISimComponent> GetComponents(Func<ISimComponent, bool> predicate) =>
-        throw new NotImplementedException();
+        return default;
+    }
 
-    private string GetDefaultName() => nameof(SimObject);
+    public IEnumerable<ISimComponent> GetComponents(string name)
+    {
+        List<ISimComponent> resultComponents = new();
+        foreach (var (_, typedComponents) in _components)
+        {
+            resultComponents.AddRange(typedComponents.Where(component => component.Name == name));
+        }
+
+        return resultComponents.ToImmutableArray();
+    }
+
+    public IEnumerable<T> GetComponents<T>(Func<T, bool> predicate)
+    {
+        if (!_components.ContainsKey(typeof(T)))
+        {
+            return Array.Empty<T>();
+        }
+
+        var typedComponents = _components[typeof(T)];
+        if (!typedComponents.Any())
+        {
+            return Array.Empty<T>();
+        }
+
+        var resultComponents = typedComponents.Where(component => predicate((T)component)).Cast<T>().ToList();
+        return resultComponents.ToImmutableArray();
+    }
+
+    public IEnumerable<ISimComponent> GetComponents(Func<ISimComponent, bool> predicate)
+    {
+        List<ISimComponent> resultComponents = new();
+        foreach (var (_, typedComponents) in _components)
+        {
+            resultComponents.AddRange(typedComponents.Where(predicate));
+        }
+
+        return resultComponents.ToImmutableArray();
+    }
+
+    public bool RemoveComponent(Guid id)
+    {
+        foreach (var (_, typedComponents) in _components)
+        {
+            var targetComponent = typedComponents.FirstOrDefault(c => c.Id == id);
+            var success = false;
+            if (targetComponent != null)
+            {
+                success = typedComponents.Remove(targetComponent);
+            }
+
+            if (success && typedComponents.Count == 0 && targetComponent != null)
+            {
+                _components.TryRemove(targetComponent.GetType(), out _);
+            }
+
+            if (success)
+            {
+                return success;
+            }
+        }
+
+        return false;
+    }
+
+    public void RemoveComponents<T>() where T : ISimComponent =>
+        _components.TryRemove(typeof(T), out _);
+
+    private static string GetDefaultName() => nameof(SimObject);
 }
