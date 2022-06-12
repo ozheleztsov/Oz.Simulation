@@ -5,5 +5,6 @@ public interface ISimContext
     ISimWorld? World { get; }
     ISimLevel? Level { get; }
     ITime Time { get; }
+    IMessageChannel MessageChannel { get; }
     void Prepare(ISimWorld? world, ISimLevel? level);
 }

@@ -3,4 +3,5 @@
 public interface ISimComponent : ISimEntity
 {
     ISimObject Owner { get; }
+    
 }
