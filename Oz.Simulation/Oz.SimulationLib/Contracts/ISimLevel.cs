@@ -4,7 +4,9 @@ public interface ISimLevel : ISimEntity
 {
     void AddObject(ISimObject simObject);
 
-    Task<ISimObject> FindAsync(Guid id);
+    void RemoveObject(Guid id);
+
+    Task<ISimObject?> FindAsync(Guid id);
 
     Task<IEnumerable<ISimObject>> FindAsync(string name);
 

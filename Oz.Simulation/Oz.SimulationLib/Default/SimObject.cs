@@ -8,6 +8,7 @@ public sealed class SimObject : ISimObject
 {
     private readonly ConcurrentDictionary<Type, List<ISimComponent>> _components = new();
     private readonly ConcurrentDictionary<string, object> _properties = new();
+    private bool _destoyed;
 
     public SimObject(Guid id, string? name)
     {
@@ -20,6 +21,11 @@ public sealed class SimObject : ISimObject
 
     public async Task InitializeAsync(ISimContext simContext)
     {
+        if (_destoyed)
+        {
+            return;
+        }
+        
         foreach (var (_, typedComponents) in _components)
         {
             foreach (var component in typedComponents)
@@ -31,6 +37,11 @@ public sealed class SimObject : ISimObject
 
     public async Task UpdateAsync(ISimContext simContext)
     {
+        if (_destoyed)
+        {
+            return;
+        }
+        
         foreach (var (_, typedComponents) in _components)
         {
             foreach (var component in typedComponents)
@@ -42,6 +53,13 @@ public sealed class SimObject : ISimObject
 
     public async Task DestroyAsync(ISimContext simContext)
     {
+        if (_destoyed)
+        {
+            return;
+        }
+
+        _destoyed = true;
+        
         foreach (var (_, typedComponents) in _components)
         {
             foreach (var component in typedComponents)
@@ -246,4 +264,6 @@ public sealed class SimObject : ISimObject
         _components.TryRemove(typeof(T), out _);
 
     private static string GetDefaultName() => nameof(SimObject);
+
+    public override string ToString() => $"[Obj: {Id}:{Name}]";
 }

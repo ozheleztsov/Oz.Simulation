@@ -1,41 +1,169 @@
 ﻿using Oz.SimulationLib.Contracts;
+using System.Collections.Concurrent;
+using System.Collections.Immutable;
 
 namespace Oz.SimulationLib.Default;
 
 public sealed class SimLevel : ISimLevel
 {
+    private readonly ConcurrentDictionary<Guid, ISimObject> _simObjects = new();
+    private bool _destroyed;
+    
+
+    public SimLevel(Guid id, string? name = null)
+    {
+        Id = id;
+        Name = name ?? GetDefaultName();
+    }
+
     public Guid Id { get; }
     public string Name { get; }
-    public Task InitializeAsync(ISimContext simContext) =>
-        throw new NotImplementedException();
 
-    public Task UpdateAsync(ISimContext simContext) =>
-        throw new NotImplementedException();
+    public async Task InitializeAsync(ISimContext simContext)
+    {
+        if (_destroyed)
+        {
+            return;
+        }
+        
+        var simObjects = _simObjects.Values.ToImmutableArray();
+        foreach (var simObject in simObjects)
+        {
+            await simObject.InitializeAsync(simContext).ConfigureAwait(false);
+        }
+    }
 
-    public Task DestroyAsync(ISimContext simContext) =>
-        throw new NotImplementedException();
+    public async Task UpdateAsync(ISimContext simContext)
+    {
+        if (_destroyed)
+        {
+            return;
+        }
+        foreach (var (_, simObject) in _simObjects)
+        {
+            await simObject.UpdateAsync(simContext).ConfigureAwait(false);
+        }
+    }
 
-    public void AddObject(ISimObject simObject) =>
-        throw new NotImplementedException();
+    public async Task DestroyAsync(ISimContext simContext)
+    {
+        if (_destroyed)
+        {
+            return;
+        }
 
-    public Task<ISimObject> FindAsync(Guid id) =>
-        throw new NotImplementedException();
+        _destroyed = true;
+        var simObjects = _simObjects.Values.ToImmutableArray();
+        foreach (var simObject in simObjects)
+        {
+            await simObject.DestroyAsync(simContext).ConfigureAwait(false);
+        }
+    }
 
-    public Task<IEnumerable<ISimObject>> FindAsync(string name) =>
-        throw new NotImplementedException();
+    public void AddObject(ISimObject simObject)
+    {
+        if (_simObjects.ContainsKey(simObject.Id))
+        {
+            throw new ArgumentException(
+                $"Unable to add object {simObject} to level. Object with such id already exists");
+        }
 
-    public Task<IEnumerable<ISimObject>> FindAsync(Func<ISimObject, bool> predicate) =>
-        throw new NotImplementedException();
+        _simObjects.TryAdd(simObject.Id, simObject);
+    }
 
-    public Task<IEnumerable<T>> FindComponentsAsync<T>() where T : ISimComponent =>
-        throw new NotImplementedException();
+    public void RemoveObject(Guid id) =>
+        _simObjects.TryRemove(id, out _);
 
-    public Task<IEnumerable<T>> FindComponentsAsync<T>(Func<T, bool> predicate) where T : ISimComponent =>
-        throw new NotImplementedException();
+    public async Task<ISimObject?> FindAsync(Guid id) =>
+        await Task.FromResult(!_simObjects.TryGetValue(id, out var simObject) ? simObject : null);
 
-    public Task<IEnumerable<T>> FindComponentsAsync<T>(Guid objectId) where T : ISimComponent =>
-        throw new NotImplementedException();
+    public async Task<IEnumerable<ISimObject>> FindAsync(string name) =>
+        await Task.FromResult<IEnumerable<ISimObject>>(_simObjects.Values.Where(so => so.Name == name)
+            .ToImmutableArray());
 
-    public Task<T?> FindComponentAsync<T>(Guid objectId) where T : ISimComponent =>
-        throw new NotImplementedException();
+    public async Task<IEnumerable<ISimObject>> FindAsync(Func<ISimObject, bool> predicate) =>
+        await Task.FromResult<IEnumerable<ISimObject>>(_simObjects.Values.Where(predicate).ToImmutableArray());
+
+    public async Task<IEnumerable<T>> FindComponentsAsync<T>() where T : ISimComponent
+    {
+        var resultComponents = new ConcurrentBag<T>();
+
+        ParallelOptions parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = _simObjects.Count == 0 ? 10 : _simObjects.Count
+        };
+
+        await Parallel.ForEachAsync(_simObjects.Values, parallelOptions, async (so, _) =>
+        {
+            var components = so.GetComponents<T>();
+            foreach (var foundComponent in components)
+            {
+                resultComponents.Add(foundComponent);
+            }
+
+            await ValueTask.CompletedTask;
+        });
+
+        return resultComponents.ToImmutableArray();
+    }
+
+    public async Task<IEnumerable<T>> FindComponentsAsync<T>(Func<T, bool> predicate) where T : ISimComponent
+    {
+        var resultComponents = new ConcurrentBag<T>();
+
+        ParallelOptions parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = _simObjects.Count == 0 ? 10 : _simObjects.Count
+        };
+
+        await Parallel.ForEachAsync(_simObjects.Values, parallelOptions, async (so, _) =>
+        {
+            var components = so.GetComponents(predicate);
+            foreach (var foundComponent in components)
+            {
+                resultComponents.Add(foundComponent);
+            }
+
+            await ValueTask.CompletedTask;
+        });
+
+        return resultComponents.ToImmutableArray();
+    }
+
+    public async Task<IEnumerable<T>> FindComponentsAsync<T>(Guid objectId) where T : ISimComponent
+    {
+        var resultComponents = new ConcurrentBag<T>();
+
+        ParallelOptions parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = _simObjects.Count == 0 ? 10 : _simObjects.Count
+        };
+
+        await Parallel.ForEachAsync(_simObjects.Values, parallelOptions, async (so, _) =>
+        {
+            var components = so.GetComponents<T>(c => c.Id == objectId);
+            foreach (var foundComponent in components)
+            {
+                resultComponents.Add(foundComponent);
+            }
+
+            await ValueTask.CompletedTask;
+        });
+
+        return resultComponents.ToImmutableArray();
+    }
+
+    public async Task<T?> FindComponentAsync<T>(Guid objectId) where T : ISimComponent
+    {
+        if (_simObjects.TryGetValue(objectId, out var simObject))
+        {
+            return await Task.FromResult(simObject.GetComponent<T>());
+        }
+
+        return default;
+    }
+
+    private string GetDefaultName() => $"{nameof(SimLevel)}";
+
+    public override string ToString() => $"[Lvl: {Id}:{Name}]";
 }

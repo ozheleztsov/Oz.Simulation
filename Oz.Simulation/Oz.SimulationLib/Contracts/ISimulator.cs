@@ -5,4 +5,5 @@ public interface ISimulator
     Task PrepareAsync(ISimContext simContext);
     Task SimulateStepAsync(ISimContext simContext);
     Task FinishAsync(ISimContext simContext);
+    ISimContext Context { get; }
 }
