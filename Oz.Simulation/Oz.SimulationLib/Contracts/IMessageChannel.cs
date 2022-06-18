@@ -1,38 +1,31 @@
 ﻿namespace Oz.SimulationLib.Contracts;
 
+/// <summary>
+///     Represent channel for sending messages to recipients
+/// </summary>
 public interface IMessageChannel
 {
-    Task<IAsyncDisposable> RegisterAsync<TMessage>(IMessageObserver<TMessage> observer);
-    Task UnregisterAsync<TMessage>(IMessageObserver<TMessage> observer);
-}
+    /// <summary>
+    ///     Register observer at the channel
+    /// </summary>
+    /// <param name="observer">Observer that receives messages</param>
+    /// <typeparam name="TMessage">Message type</typeparam>
+    /// <returns>Registration object</returns>
+    Task<IAsyncDisposable> RegisterAsync<TMessage>(IMessageObserver<TMessage> observer) where TMessage : class;
 
-public interface IMessageObserver<in TMessage>
-{
-    Task ReceiveAsync(TMessage message);
-}
+    /// <summary>
+    ///     Unregister observer from the channel
+    /// </summary>
+    /// <param name="observer">Observer that was registered previously</param>
+    /// <typeparam name="TMessage">Message type</typeparam>
+    /// <returns>Operation</returns>
+    Task UnregisterAsync<TMessage>(IMessageObserver<TMessage> observer) where TMessage : class;
 
-public class MessageRegistration<TMessage> : IAsyncDisposable
-{
-    private readonly IMessageChannel _messageChannel;
-    private readonly IMessageObserver<TMessage> _observer;
-    private bool _disposed = false;
-
-    public MessageRegistration(IMessageChannel messageChannel, IMessageObserver<TMessage> observer)
-    {
-        _messageChannel = messageChannel;
-        _observer = observer;
-    }
-
-#pragma warning disable CA1816
-    public async ValueTask DisposeAsync()
-#pragma warning restore CA1816
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        await _messageChannel.UnregisterAsync(_observer).ConfigureAwait(false);
-        _disposed = true;
-    }
+    /// <summary>
+    ///     Send message to the channel
+    /// </summary>
+    /// <param name="message">Message object</param>
+    /// <typeparam name="TMessage">Message type</typeparam>
+    /// <returns>Operation</returns>
+    Task SendMessageAsync<TMessage>(TMessage message) where TMessage : class;
 }
