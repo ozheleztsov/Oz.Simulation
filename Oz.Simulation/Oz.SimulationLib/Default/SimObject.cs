@@ -8,7 +8,7 @@ public sealed class SimObject : ISimObject
 {
     private readonly ConcurrentDictionary<Type, List<ISimComponent>> _components = new();
     private readonly ConcurrentDictionary<string, object> _properties = new();
-    private bool _destoyed;
+    private bool _destroyed;
 
     public SimObject(Guid id, string? name)
     {
@@ -21,7 +21,7 @@ public sealed class SimObject : ISimObject
 
     public async Task InitializeAsync(ISimContext simContext)
     {
-        if (_destoyed)
+        if (_destroyed)
         {
             return;
         }
@@ -37,7 +37,7 @@ public sealed class SimObject : ISimObject
 
     public async Task UpdateAsync(ISimContext simContext)
     {
-        if (_destoyed)
+        if (_destroyed)
         {
             return;
         }
@@ -53,12 +53,12 @@ public sealed class SimObject : ISimObject
 
     public async Task DestroyAsync(ISimContext simContext)
     {
-        if (_destoyed)
+        if (_destroyed)
         {
             return;
         }
 
-        _destoyed = true;
+        _destroyed = true;
         
         foreach (var (_, typedComponents) in _components)
         {

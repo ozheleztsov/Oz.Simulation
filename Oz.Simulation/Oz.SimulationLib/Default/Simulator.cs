@@ -15,6 +15,7 @@ public class Simulator : ISimulator
     {
         _time = time;
         _messageChannel = messageChannel;
+        _time.Initialize();
     }
 
     public async Task PrepareSimulationAsync()
@@ -60,6 +61,7 @@ public class Simulator : ISimulator
                 {
                     throw new NullReferenceException(nameof(Context));
                 }
+                _time.Frame();
                 await World.UpdateAsync(Context).ConfigureAwait(false);
                 await Task.Delay(TimeSpan.FromSeconds(0.016666667), token).ConfigureAwait(false);
             }

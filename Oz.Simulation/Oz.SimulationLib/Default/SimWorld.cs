@@ -27,7 +27,7 @@ public sealed class SimWorld : ISimWorld
             await simLevel.InitializeAsync(simContext).ConfigureAwait(false);
         }
     }
-
+    
     public async Task UpdateAsync(ISimContext simContext)
     {
         var activeLevel = ActiveLevel;

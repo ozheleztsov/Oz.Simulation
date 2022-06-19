@@ -8,8 +8,6 @@ public sealed class SimLevel : ISimLevel
 {
     private readonly ConcurrentDictionary<Guid, ISimObject> _simObjects = new();
     private bool _destroyed;
-    
-
     public SimLevel(Guid id, string? name = null)
     {
         Id = id;
