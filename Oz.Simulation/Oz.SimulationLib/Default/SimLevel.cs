@@ -8,7 +8,7 @@ public sealed class SimLevel : ISimLevel
 {
     private readonly ConcurrentDictionary<Guid, ISimObject> _simObjects = new();
     private bool _destroyed;
-    public SimLevel(Guid id, string? name = null)
+    public SimLevel(ISimContext context, Guid id, string? name = null)
     {
         Id = id;
         Name = name ?? GetDefaultName();
@@ -17,7 +17,7 @@ public sealed class SimLevel : ISimLevel
     public Guid Id { get; }
     public string Name { get; }
 
-    public async Task InitializeAsync(ISimContext simContext)
+    public async Task InitializeAsync()
     {
         if (_destroyed)
         {
@@ -27,11 +27,11 @@ public sealed class SimLevel : ISimLevel
         var simObjects = _simObjects.Values.ToImmutableArray();
         foreach (var simObject in simObjects)
         {
-            await simObject.InitializeAsync(simContext).ConfigureAwait(false);
+            await simObject.InitializeAsync().ConfigureAwait(false);
         }
     }
 
-    public async Task UpdateAsync(ISimContext simContext)
+    public async Task UpdateAsync()
     {
         if (_destroyed)
         {
@@ -39,11 +39,11 @@ public sealed class SimLevel : ISimLevel
         }
         foreach (var (_, simObject) in _simObjects)
         {
-            await simObject.UpdateAsync(simContext).ConfigureAwait(false);
+            await simObject.UpdateAsync().ConfigureAwait(false);
         }
     }
 
-    public async Task DestroyAsync(ISimContext simContext)
+    public async Task DestroyAsync()
     {
         if (_destroyed)
         {
@@ -54,7 +54,7 @@ public sealed class SimLevel : ISimLevel
         var simObjects = _simObjects.Values.ToImmutableArray();
         foreach (var simObject in simObjects)
         {
-            await simObject.DestroyAsync(simContext).ConfigureAwait(false);
+            await simObject.DestroyAsync().ConfigureAwait(false);
         }
     }
 

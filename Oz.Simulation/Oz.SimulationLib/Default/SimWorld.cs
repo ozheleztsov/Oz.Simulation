@@ -6,44 +6,44 @@ namespace Oz.SimulationLib.Default;
 
 public sealed class SimWorld : ISimWorld
 {
-    private readonly ISimulator _simulator;
+    private readonly ISimContext _context;
     private readonly ConcurrentDictionary<Guid, ISimLevel> _simLevels = new();
     
-    public SimWorld(Guid id, string name, ISimulator simulator)
+    public SimWorld(ISimContext context, Guid id, string name)
     {
         Id = id;
         Name = name;
-        _simulator = simulator;
+        _context = context;
     }
 
     public Guid Id { get; }
     public string Name { get; }
 
-    public async Task InitializeAsync(ISimContext simContext)
+    public async Task InitializeAsync()
     {
         foreach (var (_, simLevel) in _simLevels)
         {
-            simContext.Prepare(this, simLevel);
-            await simLevel.InitializeAsync(simContext).ConfigureAwait(false);
+            _context.Prepare(this, simLevel);
+            await simLevel.InitializeAsync().ConfigureAwait(false);
         }
     }
     
-    public async Task UpdateAsync(ISimContext simContext)
+    public async Task UpdateAsync()
     {
         var activeLevel = ActiveLevel;
         if (activeLevel != null)
         {
-            simContext.Prepare(this, activeLevel);
-            await activeLevel.UpdateAsync(simContext).ConfigureAwait(false);
+            _context.Prepare(this, activeLevel);
+            await activeLevel.UpdateAsync().ConfigureAwait(false);
         }
     }
 
-    public async Task DestroyAsync(ISimContext simContext)
+    public async Task DestroyAsync()
     {
         foreach (var (_, simLevel) in _simLevels)
         {
-            simContext.Prepare(this, simLevel);
-            await simLevel.DestroyAsync(simContext).ConfigureAwait(false);
+            _context.Prepare(this, simLevel);
+            await simLevel.DestroyAsync().ConfigureAwait(false);
         }
     }
 
@@ -58,12 +58,11 @@ public sealed class SimWorld : ISimWorld
         {
             throw new ArgumentException($"Unable to add level {simLevel} to the world. Level already added");
         }
-
-        var context = _simulator.Context;
+        
         if (_simLevels.TryAdd(simLevel.Id, simLevel))
         {
-            context.Prepare(this, simLevel);
-            await simLevel.InitializeAsync(_simulator.Context).ConfigureAwait(false);
+            _context.Prepare(this, simLevel);
+            await simLevel.InitializeAsync().ConfigureAwait(false);
         }
     }
 

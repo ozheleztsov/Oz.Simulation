@@ -28,7 +28,7 @@ public interface ISimObject : ISimEntity
     /// <param name="name">Optional component name. If there is no name default name is used</param>
     /// <typeparam name="T">Type of new component</typeparam>
     /// <returns>New component</returns>
-    T AddComponent<T>(string? name = null) where T : ISimComponent;
+    Task<T> AddComponentAsync<T>(string? name = null) where T : ISimComponent;
 
     /// <summary>
     ///     Add component instance to the object. If that instance already added to some other object or to this object then
@@ -36,7 +36,7 @@ public interface ISimObject : ISimEntity
     /// </summary>
     /// <param name="instance">Component instance to be added to the object</param>
     /// <typeparam name="T">Type of the component</typeparam>
-    void AddComponent<T>(T instance) where T : ISimComponent;
+    Task AddComponentAsync<T>(T instance) where T : ISimComponent;
 
     /// <summary>
     ///     Get all components on the object
@@ -92,11 +92,11 @@ public interface ISimObject : ISimEntity
     /// </summary>
     /// <param name="id">Id of component</param>
     /// <returns>True - if component was removed successfully</returns>
-    bool RemoveComponent(Guid id);
+    Task<bool> RemoveComponentAsync(Guid id);
 
     /// <summary>
     ///     Remove all components of specified type
     /// </summary>
     /// <typeparam name="T">Type of components</typeparam>
-    void RemoveComponents<T>() where T : ISimComponent;
+    Task RemoveComponentsAsync<T>() where T : ISimComponent;
 }

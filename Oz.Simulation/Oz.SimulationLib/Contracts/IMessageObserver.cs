@@ -2,9 +2,8 @@
 
 public interface IMessageObserver<in TMessage> : IMessageObserver where TMessage : class
 {
-    Task ReceiveAsync(TMessage? message);
-
     Task IMessageObserver.ReceiveAsync(object message) => ReceiveAsync(message as TMessage);
+    Task ReceiveAsync(TMessage? message);
 }
 
 public interface IMessageObserver

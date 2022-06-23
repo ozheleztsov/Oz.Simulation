@@ -26,9 +26,9 @@ public class Simulator : ISimulator
                 throw new InvalidOperationException($"{nameof(PrepareSimulationAsync)} can be called only once");
             case false:
                 Context = new SimContext(_time, _messageChannel, this);
-                World = new SimWorld(Guid.NewGuid(), "World", this);
+                World = new SimWorld(Context, Guid.NewGuid(), "World");
                 _cancellationTokenSource = new CancellationTokenSource();
-                await World.InitializeAsync(Context);
+                await World.InitializeAsync();
                 _isPrepared = true;
                 break;
         }
@@ -62,7 +62,7 @@ public class Simulator : ISimulator
                     throw new NullReferenceException(nameof(Context));
                 }
                 _time.Frame();
-                await World.UpdateAsync(Context).ConfigureAwait(false);
+                await World.UpdateAsync().ConfigureAwait(false);
                 await Task.Delay(TimeSpan.FromSeconds(0.016666667), token).ConfigureAwait(false);
             }
         }
@@ -112,7 +112,7 @@ public class Simulator : ISimulator
                 $"{nameof(_simulationTask)} should be running when simulation finishes");
         }
         
-        await World.DestroyAsync(Context).ConfigureAwait(false);
+        await World.DestroyAsync().ConfigureAwait(false);
         _cancellationTokenSource.Cancel();
         try
         {

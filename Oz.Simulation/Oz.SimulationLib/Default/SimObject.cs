@@ -1,4 +1,5 @@
 ﻿using Oz.SimulationLib.Contracts;
+using Oz.SimulationLib.Exceptions;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
@@ -6,12 +7,15 @@ namespace Oz.SimulationLib.Default;
 
 public sealed class SimObject : ISimObject
 {
+    private readonly ISimContext _context;
     private readonly ConcurrentDictionary<Type, List<ISimComponent>> _components = new();
     private readonly ConcurrentDictionary<string, object> _properties = new();
     private bool _destroyed;
+    private bool _initialized;
 
-    public SimObject(Guid id, string? name)
+    public SimObject(ISimContext context, Guid id, string? name)
     {
+        _context = context;
         Id = id;
         Name = name ?? GetDefaultName();
     }
@@ -19,7 +23,28 @@ public sealed class SimObject : ISimObject
     public Guid Id { get; }
     public string Name { get; }
 
-    public async Task InitializeAsync(ISimContext simContext)
+    public async Task InitializeAsync()
+    {
+        if (_initialized)
+        {
+            throw new SimulationException($"{this} already initialized");
+        }
+        if (_destroyed)
+        {
+            throw new SimulationException($"{this} already destroyed");
+        }
+        foreach (var (_, typedComponents) in _components)
+        {
+            foreach (var component in typedComponents)
+            {
+                await component.InitializeAsync().ConfigureAwait(false);
+            }
+        }
+
+        _initialized = true;
+    }
+
+    public async Task UpdateAsync()
     {
         if (_destroyed)
         {
@@ -30,28 +55,12 @@ public sealed class SimObject : ISimObject
         {
             foreach (var component in typedComponents)
             {
-                await component.InitializeAsync(simContext).ConfigureAwait(false);
+                await component.UpdateAsync().ConfigureAwait(false);
             }
         }
     }
 
-    public async Task UpdateAsync(ISimContext simContext)
-    {
-        if (_destroyed)
-        {
-            return;
-        }
-        
-        foreach (var (_, typedComponents) in _components)
-        {
-            foreach (var component in typedComponents)
-            {
-                await component.UpdateAsync(simContext).ConfigureAwait(false);
-            }
-        }
-    }
-
-    public async Task DestroyAsync(ISimContext simContext)
+    public async Task DestroyAsync()
     {
         if (_destroyed)
         {
@@ -64,7 +73,7 @@ public sealed class SimObject : ISimObject
         {
             foreach (var component in typedComponents)
             {
-                await component.DestroyAsync(simContext).ConfigureAwait(false);
+                await component.DestroyAsync().ConfigureAwait(false);
             }
         }
     }
@@ -94,9 +103,9 @@ public sealed class SimObject : ISimObject
     public IEnumerable<KeyValuePair<string, object>> Properties =>
         _properties.Select(kvp => kvp).ToImmutableList();
 
-    public T AddComponent<T>(string? name = null) where T : ISimComponent
+    public async Task<T> AddComponentAsync<T>(string? name = null) where T : ISimComponent
     {
-        var component = (T?)Activator.CreateInstance(typeof(T), this, Guid.NewGuid(), name);
+        var component = (T?)Activator.CreateInstance(typeof(T),  _context, this, Guid.NewGuid(), name);
         if (component is null)
         {
             throw new InvalidOperationException($"Impossible to create component of type {typeof(T).Name}");
@@ -112,10 +121,15 @@ public sealed class SimObject : ISimObject
             _components.TryAdd(typeof(T), components);
         }
 
+        if (_initialized)
+        {
+            await component.InitializeAsync().ConfigureAwait(false);
+        }
+
         return component;
     }
 
-    public void AddComponent<T>(T instance) where T : ISimComponent
+    public async Task AddComponentAsync<T>(T instance) where T : ISimComponent
     {
         if (instance.Owner != null && instance.Owner != this)
         {
@@ -143,6 +157,8 @@ public sealed class SimObject : ISimObject
         {
             _components.TryAdd(typeof(T), new List<ISimComponent> {instance});
         }
+
+        await instance.TryInitializeAsync().ConfigureAwait(false);
     }
 
     public IEnumerable<ISimComponent> GetComponents()
@@ -235,7 +251,7 @@ public sealed class SimObject : ISimObject
         return resultComponents.ToImmutableArray();
     }
 
-    public bool RemoveComponent(Guid id)
+    public async Task<bool> RemoveComponentAsync(Guid id)
     {
         foreach (var (_, typedComponents) in _components)
         {
@@ -253,6 +269,11 @@ public sealed class SimObject : ISimObject
 
             if (success)
             {
+                if (targetComponent != null)
+                {
+                    await targetComponent.DestroyAsync().ConfigureAwait(false);
+                }
+
                 return success;
             }
         }
@@ -260,8 +281,16 @@ public sealed class SimObject : ISimObject
         return false;
     }
 
-    public void RemoveComponents<T>() where T : ISimComponent =>
-        _components.TryRemove(typeof(T), out _);
+    public async Task RemoveComponentsAsync<T>() where T : ISimComponent
+    {
+        if (_components.TryRemove(typeof(T), out var removedComponents))
+        {
+            foreach (var component in removedComponents)
+            {
+                await component.DestroyAsync().ConfigureAwait(false);
+            }
+        }
+    }
 
     private static string GetDefaultName() => nameof(SimObject);
 
