@@ -37,7 +37,7 @@ public sealed class SimObject : ISimObject
         {
             foreach (var component in typedComponents)
             {
-                await component.InitializeAsync().ConfigureAwait(false);
+                await component.TryInitializeAsync().ConfigureAwait(false);
             }
         }
 
@@ -123,7 +123,7 @@ public sealed class SimObject : ISimObject
 
         if (_initialized)
         {
-            await component.InitializeAsync().ConfigureAwait(false);
+            await component.TryInitializeAsync().ConfigureAwait(false);
         }
 
         return component;
@@ -158,7 +158,10 @@ public sealed class SimObject : ISimObject
             _components.TryAdd(typeof(T), new List<ISimComponent> {instance});
         }
 
-        await instance.TryInitializeAsync().ConfigureAwait(false);
+        if (_initialized)
+        {
+            await instance.TryInitializeAsync().ConfigureAwait(false);
+        }
     }
 
     public IEnumerable<ISimComponent> GetComponents()

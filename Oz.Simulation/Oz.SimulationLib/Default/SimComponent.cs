@@ -9,7 +9,7 @@ public abstract class SimComponent : ISimComponent
     private bool _destroyed;
     private bool _initialized;
 
-    internal SimComponent(ISimContext context, ISimObject owner, Guid? id = null, string? name = null)
+    public SimComponent(ISimContext context, ISimObject owner, Guid? id = null, string? name = null)
     {
         _context = context;
         Id = id ?? Guid.NewGuid();
