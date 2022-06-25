@@ -31,9 +31,12 @@ public class TimeManager : ITime
 
     public void Frame()
     {
-        DeltaTime = _stopwatch.Elapsed.TotalSeconds - _previousElapsed;
+        var totalSeconds = _stopwatch.Elapsed.TotalSeconds;
+        DeltaTime = totalSeconds - _previousElapsed;
         Time += DeltaTime;
         FrameCount++;
+        _previousElapsed = totalSeconds;
+        
         if (FrameCount > (ulong.MaxValue - 10UL))
         {
             FrameCount = 0UL;

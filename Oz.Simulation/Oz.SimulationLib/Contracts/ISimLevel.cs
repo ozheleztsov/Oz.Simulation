@@ -1,8 +1,12 @@
-﻿namespace Oz.SimulationLib.Contracts;
+﻿using Oz.SimulationLib.Default;
+
+namespace Oz.SimulationLib.Contracts;
 
 public interface ISimLevel : ISimEntity
 {
-    void AddObject(ISimObject simObject);
+    Task AddObjectAsync(ISimObject simObject);
+
+    Task<SimObject> AddObjectAsync(string name);
 
     void RemoveObject(Guid id);
 

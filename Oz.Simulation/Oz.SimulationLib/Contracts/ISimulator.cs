@@ -3,7 +3,7 @@
 public interface ISimulator
 {
     Task PrepareSimulationAsync();
-    Task StartSimulationAsync();
+    Task<Task> StartSimulationAsync();
     Task FinishSimulationAsync();
     ISimContext? Context { get; }
     ISimWorld? World { get; }

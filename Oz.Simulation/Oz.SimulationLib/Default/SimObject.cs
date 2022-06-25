@@ -1,4 +1,5 @@
-﻿using Oz.SimulationLib.Contracts;
+﻿using Microsoft.Extensions.Logging;
+using Oz.SimulationLib.Contracts;
 using Oz.SimulationLib.Exceptions;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
@@ -8,14 +9,18 @@ namespace Oz.SimulationLib.Default;
 public sealed class SimObject : ISimObject
 {
     private readonly ISimContext _context;
-    private readonly ConcurrentDictionary<Type, List<ISimComponent>> _components = new();
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger<SimObject> _logger;
+    private readonly ConcurrentDictionary<Type, ConcurrentBag<ISimComponent>> _components = new();
     private readonly ConcurrentDictionary<string, object> _properties = new();
     private bool _destroyed;
     private bool _initialized;
 
-    public SimObject(ISimContext context, Guid id, string? name)
+    public SimObject(ISimContext context, Guid id, string? name, ILoggerFactory loggerFactory)
     {
         _context = context;
+        _loggerFactory = loggerFactory;
+        _logger = loggerFactory.CreateLogger<SimObject>();
         Id = id;
         Name = name ?? GetDefaultName();
     }
@@ -40,24 +45,32 @@ public sealed class SimObject : ISimObject
                 await component.TryInitializeAsync().ConfigureAwait(false);
             }
         }
-
+        _logger.LogInformation("SimObject {Name} is initialized", ToString());
         _initialized = true;
     }
 
     public async Task UpdateAsync()
     {
+        if (!_initialized)
+        {
+            _logger.LogWarning("SimObject {Name} is not initialized, no updates", Name);
+            return;
+        }
         if (_destroyed)
         {
+            _logger.LogWarning("SimObject {Name} is destroyed, no updates", Name);
             return;
         }
         
         foreach (var (_, typedComponents) in _components)
         {
+            
             foreach (var component in typedComponents)
             {
                 await component.UpdateAsync().ConfigureAwait(false);
             }
         }
+        //_logger.LogInformation("SimObject {Name} is updated", ToString());
     }
 
     public async Task DestroyAsync()
@@ -76,6 +89,7 @@ public sealed class SimObject : ISimObject
                 await component.DestroyAsync().ConfigureAwait(false);
             }
         }
+        _logger.LogInformation("SimObject {Name} is destroyed", ToString());
     }
 
     public void SetProperty(string key, object? value)
@@ -105,7 +119,7 @@ public sealed class SimObject : ISimObject
 
     public async Task<T> AddComponentAsync<T>(string? name = null) where T : ISimComponent
     {
-        var component = (T?)Activator.CreateInstance(typeof(T),  _context, this, Guid.NewGuid(), name);
+        var component = (T?)Activator.CreateInstance(typeof(T),  _context, this, _loggerFactory.CreateLogger<T>(), Guid.NewGuid(), name);
         if (component is null)
         {
             throw new InvalidOperationException($"Impossible to create component of type {typeof(T).Name}");
@@ -117,7 +131,7 @@ public sealed class SimObject : ISimObject
         }
         else
         {
-            var components = new List<ISimComponent> {component};
+            var components = new ConcurrentBag<ISimComponent>() {component};
             _components.TryAdd(typeof(T), components);
         }
 
@@ -155,7 +169,7 @@ public sealed class SimObject : ISimObject
         }
         else
         {
-            _components.TryAdd(typeof(T), new List<ISimComponent> {instance});
+            _components.TryAdd(typeof(T), new ConcurrentBag<ISimComponent>() {instance});
         }
 
         if (_initialized)
@@ -262,7 +276,17 @@ public sealed class SimObject : ISimObject
             var success = false;
             if (targetComponent != null)
             {
-                success = typedComponents.Remove(targetComponent);
+                var arr = typedComponents.ToImmutableArray();
+                typedComponents.Clear();
+                foreach (var c in arr)
+                {
+                    if (!ReferenceEquals(c, targetComponent))
+                    {
+                        typedComponents.Add(c);
+                    }
+                }
+
+                success = true;
             }
 
             if (success && typedComponents.Count == 0 && targetComponent != null)

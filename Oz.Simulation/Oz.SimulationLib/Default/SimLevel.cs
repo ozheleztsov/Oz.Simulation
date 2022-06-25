@@ -1,4 +1,5 @@
-﻿using Oz.SimulationLib.Contracts;
+﻿using Microsoft.Extensions.Logging;
+using Oz.SimulationLib.Contracts;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
@@ -6,12 +7,19 @@ namespace Oz.SimulationLib.Default;
 
 public sealed class SimLevel : ISimLevel
 {
+    private readonly ISimContext _context;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ConcurrentDictionary<Guid, ISimObject> _simObjects = new();
-    private bool _destroyed;
-    public SimLevel(ISimContext context, Guid id, string? name = null)
+    private bool _destroyed, _initialized;
+    private readonly ILogger<SimLevel> _logger;
+
+    public SimLevel(ISimContext context, Guid id, ILoggerFactory loggerFactory, string? name = null)
     {
+        _context = context;
+        _loggerFactory = loggerFactory;
         Id = id;
         Name = name ?? GetDefaultName();
+        _logger = loggerFactory.CreateLogger<SimLevel>();
     }
 
     public Guid Id { get; }
@@ -19,28 +27,46 @@ public sealed class SimLevel : ISimLevel
 
     public async Task InitializeAsync()
     {
+        if (_initialized)
+        {
+            throw new InvalidOperationException($"SimLevel {Name} already initialized.");
+        }
+
         if (_destroyed)
         {
-            return;
+            throw new InvalidOperationException($"Impossible to initialize destroyed SimLevel {Name}");
         }
-        
+
         var simObjects = _simObjects.Values.ToImmutableArray();
         foreach (var simObject in simObjects)
         {
             await simObject.InitializeAsync().ConfigureAwait(false);
         }
+
+        _logger.LogInformation("SimLevel {Name} is initialized", Name);
+        _initialized = true;
     }
 
     public async Task UpdateAsync()
     {
-        if (_destroyed)
+        if (!_initialized)
         {
+            _logger.LogWarning("SimLevel {Name} is not initialized, update skipped", Name);
             return;
         }
+
+        if (_destroyed)
+        {
+            _logger.LogWarning("SimLevel {Name} is destroyed, update skipped", Name);
+            return;
+        }
+
         foreach (var (_, simObject) in _simObjects)
         {
             await simObject.UpdateAsync().ConfigureAwait(false);
         }
+
+        //_logger.LogInformation("SimLevel {Name} is updated", Name);
     }
 
     public async Task DestroyAsync()
@@ -56,9 +82,17 @@ public sealed class SimLevel : ISimLevel
         {
             await simObject.DestroyAsync().ConfigureAwait(false);
         }
+        _logger.LogInformation("SimLevel {Name} is destroyed", Name);
     }
 
-    public void AddObject(ISimObject simObject)
+    public async Task<SimObject> AddObjectAsync(string name)
+    {
+        var simObject = new SimObject(_context, Guid.NewGuid(), name, _loggerFactory);
+        await AddObjectAsync(simObject).ConfigureAwait(false);
+        return simObject;
+    }
+
+    public async Task AddObjectAsync(ISimObject simObject)
     {
         if (_simObjects.ContainsKey(simObject.Id))
         {
@@ -67,6 +101,10 @@ public sealed class SimLevel : ISimLevel
         }
 
         _simObjects.TryAdd(simObject.Id, simObject);
+        if (_initialized && !_destroyed)
+        {
+            await simObject.InitializeAsync().ConfigureAwait(false);
+        }
     }
 
     public void RemoveObject(Guid id) =>

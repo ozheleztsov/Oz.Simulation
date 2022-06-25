@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Oz.SimulationLib.Contracts;
 using Oz.SimulationLib.Default;
@@ -17,7 +18,7 @@ public class SimObjectTests
     private readonly SimObject _sut;
 
     public SimObjectTests() =>
-        _sut = new SimObject(_simContextMock.Object, Guid.NewGuid(), "TestObject");
+        _sut = new SimObject(_simContextMock.Object, Guid.NewGuid(), "TestObject", new NullLoggerFactory());
 
     [Fact]
     public void Should_Correct_Set_Properties()
@@ -57,17 +58,17 @@ public class SimObjectTests
     [Fact]
     public async Task Should_Add_Component_Second_Approach()
     {
-        var component1 = new TestComponent(_simContextMock.Object, _sut, Guid.NewGuid(), "OneComp");
+        var component1 = new TestComponent(_simContextMock.Object, _sut, new NullLogger<TestComponent>(), Guid.NewGuid(), "OneComp");
         await _sut.AddComponentAsync(component1);
         component1.InitializeCalled.Should().Be(0);
         await _sut.InitializeAsync();
         component1.InitializeCalled.Should().Be(1);
 
-        var component2 = new TestComponent(_simContextMock.Object, null!, Guid.NewGuid(), "TwoComp");
+        var component2 = new TestComponent(_simContextMock.Object, null!, new NullLogger<TestComponent>(),Guid.NewGuid(), "TwoComp");
         await Assert.ThrowsAsync<ArgumentException>(async () => await _sut.AddComponentAsync(component2));
 
-        var otherObj = new SimObject(_simContextMock.Object, Guid.NewGuid(), "OtherObj");
-        var component3 = new TestComponent(_simContextMock.Object, otherObj, Guid.NewGuid(), "ThreeObj");
+        var otherObj = new SimObject(_simContextMock.Object, Guid.NewGuid(), "OtherObj", new NullLoggerFactory());
+        var component3 = new TestComponent(_simContextMock.Object, otherObj,new NullLogger<TestComponent>(), Guid.NewGuid(), "ThreeObj");
         await Assert.ThrowsAsync<ArgumentException>(async () => await _sut.AddComponentAsync(component3));
 
         //should not add the same reference twice

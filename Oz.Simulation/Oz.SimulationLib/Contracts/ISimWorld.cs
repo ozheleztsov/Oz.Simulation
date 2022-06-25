@@ -8,5 +8,7 @@ public interface ISimWorld : ISimEntity
 
     Task AddLevelAsync(ISimLevel simLevel);
 
+    Task<ISimLevel> AddLevelAsync(string name);
+
     void MakeActive(Guid levelId);
 }

@@ -1,21 +1,26 @@
-﻿using Oz.SimulationLib.Contracts;
+﻿using Microsoft.Extensions.Logging;
+using Oz.SimulationLib.Contracts;
 using Oz.SimulationLib.Exceptions;
 
 namespace Oz.SimulationLib.Default;
 
 public abstract class SimComponent : ISimComponent
 {
-    private readonly ISimContext _context;
     private bool _destroyed;
     private bool _initialized;
 
-    public SimComponent(ISimContext context, ISimObject owner, Guid? id = null, string? name = null)
+    public SimComponent(ISimContext context, ISimObject owner, ILogger logger, Guid? id = null, string? name = null)
     {
-        _context = context;
+        Context = context;
+        Logger = logger;
         Id = id ?? Guid.NewGuid();
         Name = name ?? ConstructDefaultName(owner);
         Owner = owner;
     }
+
+    public ISimContext Context { get; }
+
+    protected ILogger Logger { get; }
 
     public Guid Id { get; }
     public virtual string Name { get; }
@@ -33,6 +38,7 @@ public abstract class SimComponent : ISimComponent
         }
 
         await OnInitializeAsync().ConfigureAwait(false);
+        Logger.LogInformation("Component {Name} is initialized", Name);
         _initialized = true;
     }
 
@@ -40,10 +46,12 @@ public abstract class SimComponent : ISimComponent
     {
         if (!_initialized)
         {
-            throw new SimulationException($"Component {this} is not initialized");
+            Logger.LogWarning("SimComponent {Name} is not initialize, update fails", Name);
+            return;
         }
 
         await OnUpdateAsync().ConfigureAwait(false);
+        //Logger.LogInformation("Component {Name} is updated", Name);
     }
 
     public async Task DestroyAsync()
@@ -55,6 +63,7 @@ public abstract class SimComponent : ISimComponent
 
         await OnDestroyAsync();
         _destroyed = true;
+        Logger.LogInformation("Component {Name} is destroyed", Name);
     }
 
     public ISimObject Owner { get; }
