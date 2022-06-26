@@ -103,12 +103,12 @@ public sealed class SimLevel : ISimLevel
         _simObjects.TryAdd(simObject.Id, simObject);
         if (_initialized && !_destroyed)
         {
-            await simObject.InitializeAsync().ConfigureAwait(false);
+            await simObject.TryInitializeAsync().ConfigureAwait(false);
         }
     }
 
-    public void RemoveObject(Guid id) =>
-        _simObjects.TryRemove(id, out _);
+    public ISimObject? RemoveObject(Guid id) =>
+        _simObjects.TryRemove(id, out var obj) ? obj : null;
 
     public async Task<ISimObject?> FindAsync(Guid id) =>
         await Task.FromResult(!_simObjects.TryGetValue(id, out var simObject) ? simObject : null);

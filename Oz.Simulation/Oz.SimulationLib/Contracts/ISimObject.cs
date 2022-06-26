@@ -99,4 +99,6 @@ public interface ISimObject : ISimEntity
     /// </summary>
     /// <typeparam name="T">Type of components</typeparam>
     Task RemoveComponentsAsync<T>() where T : ISimComponent;
+
+    Task TryInitializeAsync();
 }

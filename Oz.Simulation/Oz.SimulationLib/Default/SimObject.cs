@@ -319,6 +319,21 @@ public sealed class SimObject : ISimObject
         }
     }
 
+    public async Task TryInitializeAsync()
+    {
+        if (_initialized)
+        {
+            return;
+        }
+
+        if (_destroyed)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(false);
+    }
+
     private static string GetDefaultName() => nameof(SimObject);
 
     public override string ToString() => $"[Obj: {Id}:{Name}]";
