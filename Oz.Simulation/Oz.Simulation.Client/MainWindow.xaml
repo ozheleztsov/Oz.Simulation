@@ -7,94 +7,26 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
-        <MeshGeometry3D x:Key="geometry"
-                        Positions="-1 1 1, 1 1 1, 1 1 -1,-1 1 -1,
--1 -1 1,-1 -1 -1, 1 -1 -1, 1 -1 1,
--1 1 1,-1 -1 1, 1 -1 1, 1 1 1,
-1 1 1, 1 -1 1, 1 -1 -1, 1 1 -1,
-1 1 -1, 1 -1 -1,-1 -1 -1,-1 1 -1,
--1 1 -1,-1 -1 -1,-1 -1 1,-1 1 1"
-                        TriangleIndices=" 0 1 2, 2 3 0,
-4 5 6, 6 7 4,
-8 9 10,10 11 8,
-12 13 14,14 15 12,
-16 17 18,18 19 16,
-20 21 22,22 23 20" />
-        <DiffuseMaterial x:Key="material" Brush="SteelBlue"></DiffuseMaterial>
+
     </Window.Resources>
     
-    <Viewbox Stretch="Uniform">
-        <Grid Width="430" Height="300" HorizontalAlignment="Left" VerticalAlignment="Top" ShowGridLines="False">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100" />
-                <ColumnDefinition Width="330" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Margin="5" Grid.Column="0">
-                <TextBlock Text="Camera Position" Margin="2"/>
-                <TextBox Name="tbCameraPosition" Margin="2"
-                         HorizontalAlignment="Left"
-                         Text="3,4,5"/>
-                <TextBlock Text="Look Direction" Margin="2"/>
-                <TextBox Name="tbLookDirection" Margin="2"
-                         HorizontalAlignment="Left"
-                         Text="-3,-4,-5"/>
-                <TextBlock Text="Up Direction" Margin="2"/>
-                <TextBox Name="tbUpDirection" Margin="2"
-                         HorizontalAlignment="Left"
-                         Text="0,1,0"/>
-                <TextBlock Text="Near Plane" Margin="2"/>
-                <TextBox Name="tbNearPlane" Margin="2"
-                         HorizontalAlignment="Left" Text="1"/>
-                <TextBlock Text="Far Plane" Margin="2"/>
-                <TextBox Name="tbFarPlane" Margin="2"
-                         HorizontalAlignment="Left"
-                         Text="100"/>
-                <TextBlock Text="Field of View" Margin="2"/>
-                <TextBox Name="tbFieldOfView" Margin="2"
-                         HorizontalAlignment="Left"
-                         Text="60"/>
-                <Button Name="btnApply" Margin="2,5,2,2"
-                        Click="BtnApply_OnClick">Apply</Button>
-            </StackPanel>
-            
-            <Border Margin="5" BorderBrush="Black"
-                    BorderThickness="1" HorizontalAlignment="Left"
-                    Width="320" Height="290" Grid.Column="1">
-                <Viewport3D ClipToBounds="True">
-                    <Viewport3D.Camera>
-                        <MatrixCamera x:Name="myCameraMatrix"></MatrixCamera>
-                    </Viewport3D.Camera>
-                    <ContainerUIElement3D>
-                        <ModelUIElement3D>
-                            <Model3DGroup>
-                                <GeometryModel3D Geometry="{StaticResource geometry}"
-                                                 Material="{StaticResource material}">
-                                    <GeometryModel3D.Transform>
-                                        <TranslateTransform3D OffsetZ="1"></TranslateTransform3D>
-                                    </GeometryModel3D.Transform>
-                                </GeometryModel3D>
-                                <GeometryModel3D
-                                    Geometry="{StaticResource geometry}"
-                                    Material="{StaticResource material}">
-                                    <GeometryModel3D.Transform>
-                                        <TranslateTransform3D OffsetZ="-2"/>
-                                    </GeometryModel3D.Transform>
-                                </GeometryModel3D>
-                                <GeometryModel3D
-                                    Geometry="{StaticResource geometry}"
-                                    Material="{StaticResource material}">
-                                    <GeometryModel3D.Transform>
-                                        <TranslateTransform3D OffsetZ="-5"/>
-                                    </GeometryModel3D.Transform>
-                                </GeometryModel3D>
-                                
-                                <AmbientLight Color="Gray"></AmbientLight>
-                                <DirectionalLight Color="Gray" Direction="-1 -2 -3"></DirectionalLight>
-                            </Model3DGroup>
-                        </ModelUIElement3D>
-                    </ContainerUIElement3D>
-                </Viewport3D>
-            </Border>
-        </Grid>
-    </Viewbox>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="Samples">
+                <MenuItem Header="Perspective Camera" 
+                          x:Name="perspectiveCameraMenu" 
+                          Click="PerspectiveCameraMenu_OnClick"></MenuItem>
+                <MenuItem Header="Orthographic Camera" 
+                          x:Name="orthographicCameraMenu" 
+                          Click="OrthographicCameraMenu_OnClick"></MenuItem>
+                <MenuItem Header="Wireframe"
+                          x:Name="wireframeMenu"
+                          Click="WireframeMenu_OnClick"></MenuItem>
+            </MenuItem>
+        </Menu>
+    </Grid>
 </Window>

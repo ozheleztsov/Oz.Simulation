@@ -1,4 +1,5 @@
 ﻿using Oz.Simulation.Client.Contracts.Windows;
+using Oz.Simulation.Client.SampleWindows;
 using Oz.Simulation.Client.ViewModels;
 using Oz.Simulation.ClientLib;
 using System.Windows;
@@ -15,22 +16,21 @@ public partial class MainWindow : Window, IMainWindow
     {
         InitializeComponent();
         DataContext = mainWindowViewModel;
-        SetMatrixCamera();
     }
 
-    private void BtnApply_OnClick(object sender, RoutedEventArgs e) =>
-        SetMatrixCamera();
-
-    private void SetMatrixCamera()
+    private void PerspectiveCameraMenu_OnClick(object sender, RoutedEventArgs e)
     {
-        var cameraPosition = Point3D.Parse(tbCameraPosition.Text);
-        var lookDirection = Vector3D.Parse(tbLookDirection.Text);
-        var upDirection = Vector3D.Parse(tbUpDirection.Text);
-        var fov = double.Parse(tbFieldOfView.Text);
-        var zn = double.Parse(tbNearPlane.Text);
-        var zf = double.Parse(tbFarPlane.Text);
-        var aspectRatio = 1.0;
-        myCameraMatrix.ViewMatrix = Utils3d.SetViewMatrix(cameraPosition, lookDirection, upDirection);
-        myCameraMatrix.ProjectionMatrix = Utils3d.SetPerspectiveFov(fov, aspectRatio, zn, zf);
+        PerspectiveCameraWindow window = new PerspectiveCameraWindow();
+        window.Show();
+    }
+
+    private void OrthographicCameraMenu_OnClick(object sender, RoutedEventArgs e)
+    {
+        new OrthographicCameraWindow().Show();
+    }
+
+    private void WireframeMenu_OnClick(object sender, RoutedEventArgs e)
+    {
+        new WireframeWindow().Show();
     }
 }
