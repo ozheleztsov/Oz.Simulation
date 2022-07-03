@@ -6,6 +6,9 @@ using Oz.Simulation.Client.Contracts.Windows;
 using Oz.Simulation.Client.HostedServices;
 using Oz.Simulation.Client.Services;
 using Oz.Simulation.Client.ViewModels;
+using Oz.Simulation.ClientLib.Contracts;
+using Oz.Simulation.ClientLib.Services;
+using Oz.SimulationLib.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -73,6 +76,8 @@ namespace Oz.Simulation.Client
             serviceCollection.AddTransient<MainWindowViewModel>();
             serviceCollection.AddTransient<IMainWindow, MainWindow>();
             serviceCollection.AddHostedService<ApplicationHostedService>();
+            serviceCollection.RegisterSimulator();
+            serviceCollection.AddSingleton<ISimulationService, SimulationService>();
         }
 
         private async void OnStartup(object sender, StartupEventArgs e)

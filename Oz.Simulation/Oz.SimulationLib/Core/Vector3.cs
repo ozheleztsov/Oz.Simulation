@@ -78,4 +78,10 @@ public readonly struct Vector3
 
     public override readonly string ToString() =>
         $"[{X}, {Y}, {Z}]";
+
+    public static Vector3 operator *(double d, Vector3 v) =>
+        new(d * v.X, d * v.Y, d * v.Z);
+    
+    public static Vector3 operator *(Vector3 v, double d) =>
+        new(d * v.X, d * v.Y, d * v.Z);
 }

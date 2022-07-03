@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
@@ -28,6 +29,8 @@ public partial class MainWindow : Window, IMainWindow
         AddPlanets();
         CompositionTarget.Rendering += OnRender;
     }
+
+    public Viewport3D MainViewport => _mainViewport;
 
     private void OnRender(object? sender, EventArgs e)
     {

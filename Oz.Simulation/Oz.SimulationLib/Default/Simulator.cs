@@ -115,12 +115,6 @@ public class Simulator : ISimulator
         {
             throw new InvalidOperationException($"{nameof(_simulationTask)} cant be null when simulation finishes");
         }
-
-        // if (_simulationTask.Status != TaskStatus.Running)
-        // {
-        //     throw new InvalidOperationException(
-        //         $"{nameof(_simulationTask)} should be running when simulation finishes");
-        // }
         
         await World.DestroyAsync().ConfigureAwait(false);
         _cancellationTokenSource.Cancel();

@@ -133,7 +133,7 @@ public static class MathUtils
 
         var xScale = 1 / Math.Tan(hFoV / 2);
         var yScale = aspectRatio * xScale;
-        var m33 = zf == double.PositiveInfinity ? -1 : zf / (zn - zf);
+        var m33 = double.IsPositiveInfinity(zf) ? -1 : zf / (zn - zf);
         var m43 = zn * m33;
 
         return new Matrix3D(
@@ -149,34 +149,14 @@ public static class MathUtils
     /// </summary>
     public static Matrix3D GetProjectionMatrix(Camera camera, double aspectRatio)
     {
-        if (camera == null)
+        return camera switch
         {
-            throw new ArgumentNullException("camera");
-        }
-
-        var perspectiveCamera = camera as PerspectiveCamera;
-
-        if (perspectiveCamera != null)
-        {
-            return GetProjectionMatrix(perspectiveCamera, aspectRatio);
-        }
-
-        var orthographicCamera = camera as OrthographicCamera;
-
-        if (orthographicCamera != null)
-        {
-            return GetProjectionMatrix(orthographicCamera, aspectRatio);
-        }
-
-        var matrixCamera = camera as MatrixCamera;
-
-        if (matrixCamera != null)
-        {
-            return matrixCamera.ProjectionMatrix;
-        }
-
-        throw new ArgumentException(string.Format("Unsupported camera type '{0}'.", camera.GetType().FullName),
-            "camera");
+            null => throw new ArgumentNullException(nameof(camera)),
+            PerspectiveCamera perspectiveCamera => GetProjectionMatrix(perspectiveCamera, aspectRatio),
+            OrthographicCamera orthographicCamera => GetProjectionMatrix(orthographicCamera, aspectRatio),
+            MatrixCamera matrixCamera => matrixCamera.ProjectionMatrix,
+            _ => throw new ArgumentException($"Unsupported camera type '{camera.GetType().FullName}'.", nameof(camera))
+        };
     }
 
     private static Matrix3D GetHomogeneousToViewportTransform(Rect viewport)
