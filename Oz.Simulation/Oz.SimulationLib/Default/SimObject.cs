@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 
 namespace Oz.SimulationLib.Default;
 
-public sealed class SimObject : ISimObject
+public class SimObject : ISimObject
 {
     private readonly ISimContext _context;
     private readonly ILoggerFactory _loggerFactory;
