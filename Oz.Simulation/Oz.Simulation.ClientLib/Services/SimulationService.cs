@@ -6,6 +6,8 @@ using Oz.SimulationLib.Core;
 using Oz.SimulationLib.Default;
 using Oz.SimulationLib.Exceptions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Oz.Simulation.ClientLib.Services;
@@ -14,6 +16,7 @@ public class SimulationService : ISimulationService
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly ISimulator _simulator;
+    private RungeKuttaIntegrationComponent? _integrationComponent;
 
     public SimulationService(ISimulator simulator, ILoggerFactory loggerFactory)
     {
@@ -31,9 +34,9 @@ public class SimulationService : ISimulationService
         var firstMass = await firstStar.GetMassAsync().ConfigureAwait(false);
         firstMass.SetMass(1);
         var firstTransform = await firstStar.GetTransformAsync().ConfigureAwait(false);
-        firstTransform.Position = new Vector3();
+        firstTransform.Position = new Vector3(-1,0,0);
         var firstVelocity = await firstStar.GetVelocityAsync().ConfigureAwait(false);
-        firstVelocity.Velocity = new Vector3(0, 0, 2 * Math.PI / 365);
+        firstVelocity.Velocity = new Vector3(0, 0, 1.1* Math.PI);
 
         var secondStar = new SimObject3D(_simulator.Context ?? throw new SimulationException("Context is not set"), Guid.NewGuid(), "Second", _loggerFactory);
         var secondMass = await secondStar.GetMassAsync().ConfigureAwait(false);
@@ -41,7 +44,7 @@ public class SimulationService : ISimulationService
         var secondTransform = await secondStar.GetTransformAsync().ConfigureAwait(false);
         secondTransform.Position = new Vector3(1, 0, 0);
         var secondVelocity = await secondStar.GetVelocityAsync().ConfigureAwait(false);
-        secondVelocity.Velocity = new Vector3(0, 0, -2 * Math.PI / 365);
+        secondVelocity.Velocity = new Vector3(0, 0,  -1.1 * Math.PI  );
 
         var simulationManager = new SimObject(_simulator.Context, Guid.NewGuid(), "Simulation Manager", _loggerFactory);
         var integrator = await simulationManager.AddComponentAsync<RungeKuttaIntegrationComponent>().ConfigureAwait(false);
@@ -52,5 +55,42 @@ public class SimulationService : ISimulationService
 
         await _simulator.StartSimulationAsync().ConfigureAwait(false);
         await integrator.PrepareAsync().ConfigureAwait(false);
+        _integrationComponent = integrator;
+    }
+
+    public async Task<Dictionary<Guid, Vector3>> GetPlanetPositionsAsync()
+    {
+        var world = _simulator.World;
+        if (world is null)
+        {
+            return new Dictionary<Guid, Vector3>();
+        }
+
+        var level = world.ActiveLevel;
+        if (level is null)
+        {
+            return new Dictionary<Guid, Vector3>();
+        }
+
+        var integrators = await level.FindComponentsAsync<RungeKuttaIntegrationComponent>();
+        if (!integrators.Any())
+        {
+            return new Dictionary<Guid, Vector3>();
+        }
+
+        var integrator = integrators.Single();
+        
+        // if (_integrationComponent is null)
+        // {
+        //     return new Dictionary<Guid, Vector3>();
+        // }
+
+        Dictionary<Guid, Vector3> positions = new();
+        foreach (var (key, pos) in integrator.OutputPositions)
+        {
+            positions[key] = pos;
+        }
+
+        return positions;
     }
 }

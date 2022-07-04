@@ -3,12 +3,15 @@ using Oz.SimulationLib.Contracts;
 using Oz.SimulationLib.Core;
 using Oz.SimulationLib.Default;
 using Oz.SimulationLib.Exceptions;
+using System.Collections.Concurrent;
 
 namespace Oz.SimulationLib.Components;
 
 public class RungeKuttaIntegrationComponent : SimComponent
 {
     private readonly List<IntegrationObject> _integrationObjects = new();
+    public ConcurrentDictionary<Guid, Vector3> OutputPositions { get; } = new();
+    
     private bool _isPrepared;
 
     public double DeltaTime { get; set; } = 1.0 / 365;
@@ -50,6 +53,10 @@ public class RungeKuttaIntegrationComponent : SimComponent
     {
         var updatedVelocitiesPositions = GetUpdatedPositionVelocities(integrationObjects, deltaTime);
         AdvanceIntegrationObjectsPositions(integrationObjects, updatedVelocitiesPositions);
+        foreach (var integrationObj in _integrationObjects)
+        {
+            OutputPositions[integrationObj.SimObject.Id] = integrationObj.Transform.Position;
+        }
     }
 
     private void AdvanceIntegrationObjectsPositions(List<IntegrationObject> integrationObjects, List<(Vector3 Velocity, Vector3 Position)> newVelocitiesPositions)

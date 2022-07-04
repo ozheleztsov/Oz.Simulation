@@ -202,12 +202,12 @@ public static class MathUtils
     ///     in which case the camera clip planes will be coincident and
     ///     nothing will render.  In this case success will be false.
     /// </summary>
-    public static Matrix3D TryWorldToCameraTransform(Viewport3DVisual visual, out bool success)
+    public static Matrix3D TryWorldToCameraTransform(Viewport3DVisual? visual, out bool success)
     {
         success = false;
         var result = Matrix3D.Identity;
 
-        var camera = visual.Camera;
+        var camera = visual?.Camera;
 
         if (camera == null)
         {

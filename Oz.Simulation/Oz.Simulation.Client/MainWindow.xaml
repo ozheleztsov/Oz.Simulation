@@ -6,6 +6,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:Oz.Simulation.Client"
         xmlns:shapes="clr-namespace:Oz.Simulation.ClientLib.Objects;assembly=Oz.Simulation.ClientLib"
+        xmlns:tools="clr-namespace:Oz.Simulation.ClientLib.Tools;assembly=Oz.Simulation.ClientLib"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
@@ -27,22 +28,30 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <MenuItem Header="Samples">
-                <MenuItem Header="Perspective Camera" 
-                          x:Name="perspectiveCameraMenu" 
-                          Click="PerspectiveCameraMenu_OnClick"></MenuItem>
-                <MenuItem Header="Orthographic Camera" 
-                          x:Name="orthographicCameraMenu" 
-                          Click="OrthographicCameraMenu_OnClick"></MenuItem>
-                <MenuItem Header="Wireframe"
-                          x:Name="wireframeMenu"
-                          Click="WireframeMenu_OnClick"></MenuItem>
             </MenuItem>
         </Menu>
         <Viewport3D Grid.Row="1" x:Name="_mainViewport">
             <Viewport3D.Camera>
                 <!-- <PerspectiveCamera Position="40,70,60" LookDirection="-40,-70,-60"></PerspectiveCamera> -->
-                <OrthographicCamera Position="70,70,70" LookDirection="-70,-70,-70" Width="80"></OrthographicCamera>
+                <!-- <OrthographicCamera x:Name="_mainCamera"  -->
+                <!--                     Position="10,10,10"  -->
+                <!--                     LookDirection="-10,-10,-10"  -->
+                <!--                     Width="20"></OrthographicCamera> -->
+                <PerspectiveCamera x:Name="_mainCamera"
+                                   Position="10,10,10"
+                                   LookDirection="-10,-10,-10"
+                                   FieldOfView="60"></PerspectiveCamera>
             </Viewport3D.Camera>
+            
+            <tools:ScreenSpaceLines3D
+                Points="0,0,0 5,0,0"
+                Color="Red"></tools:ScreenSpaceLines3D>
+            <tools:ScreenSpaceLines3D
+                Points="0,0,0 0,5,0"
+                Color="Green"></tools:ScreenSpaceLines3D>
+            <tools:ScreenSpaceLines3D
+                Points="0,0,0 0,0,5"
+                Color="Blue"></tools:ScreenSpaceLines3D>
             
             <ModelVisual3D>
                 <ModelVisual3D.Content>

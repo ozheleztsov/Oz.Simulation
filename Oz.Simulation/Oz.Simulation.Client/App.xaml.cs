@@ -78,6 +78,8 @@ namespace Oz.Simulation.Client
             serviceCollection.AddHostedService<ApplicationHostedService>();
             serviceCollection.RegisterSimulator();
             serviceCollection.AddSingleton<ISimulationService, SimulationService>();
+            serviceCollection.AddSingleton<IWindowService, WindowService>();
+            serviceCollection.AddSingleton<ISimulationViewportService, SimulationViewportService>();
         }
 
         private async void OnStartup(object sender, StartupEventArgs e)
