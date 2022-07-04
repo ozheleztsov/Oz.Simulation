@@ -46,11 +46,22 @@ public class SimulationService : ISimulationService
         var secondVelocity = await secondStar.GetVelocityAsync().ConfigureAwait(false);
         secondVelocity.Velocity = new Vector3(0, 0,  -1.1 * Math.PI  );
 
+
+        var thirdStar = new SimObject3D(_simulator.Context ?? throw new SimulationException("Context is not set"),
+            Guid.NewGuid(), "Third", _loggerFactory);
+        var thirdMass = await thirdStar.GetMassAsync().ConfigureAwait(false);
+        thirdMass.SetMass(0.01);
+        var thirdTransform = await thirdStar.GetTransformAsync().ConfigureAwait(false);
+        thirdTransform.Position = new Vector3(0, 0, -5);
+        var thirdVelocity = await thirdStar.GetVelocityAsync().ConfigureAwait(false);
+        thirdVelocity.Velocity = new Vector3(-Math.PI * 1.3, 0, 0);
+        
         var simulationManager = new SimObject(_simulator.Context, Guid.NewGuid(), "Simulation Manager", _loggerFactory);
         var integrator = await simulationManager.AddComponentAsync<RungeKuttaIntegrationComponent>().ConfigureAwait(false);
 
         await simulationLevel.AddObjectAsync(firstStar).ConfigureAwait(false);
         await simulationLevel.AddObjectAsync(secondStar).ConfigureAwait(false);
+        await simulationLevel.AddObjectAsync(thirdStar).ConfigureAwait(false);
         await simulationLevel.AddObjectAsync(simulationManager).ConfigureAwait(false);
 
         await _simulator.StartSimulationAsync().ConfigureAwait(false);

@@ -12,6 +12,6 @@ public class MassComponent : SimComponent
     {
     }
 
-    public void SetMass(int mass) =>
+    public void SetMass(double mass) =>
         Mass = mass;
 }
