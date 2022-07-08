@@ -1,0 +1,46 @@
+﻿{
+    "objects": [
+        {
+            "name": "Sun",
+            "mass": 1,
+            "position": [0, 0, 0],
+            "velocity": [0, 0, 0]
+        },
+        {
+            "name": "Mercury",
+            "mass": 1.6E-07,
+            "position": [0.4, 0, 0],
+            "velocity": [0, 0, -9.9849]
+        },
+        {
+            "name": "Venus",
+            "mass": 2.45E-06,
+            "position": [0.72, 0, 0],
+            "velocity": [0, 0, -7.38333]
+        },
+        {
+            "name": "Earth",
+            "mass": 3E-06,
+            "position": [1, 0, 0],
+            "velocity": [0, 0, -6.278]
+        },
+        {
+            "name": "Mars",
+            "mass": 3.2126E-07,
+            "position": [1.524, 0, 0],
+            "velocity": [0, 0, -5.074]
+        },
+        {
+            "name": "Jupitor",
+            "mass": 0.0009542,
+            "position": [5.2, 0, 0],
+            "velocity": [0, 0, -2.75557]
+        },
+        {
+            "name" : "Saturn",
+            "mass": 0.000285721468,
+            "position": [9.5, 0, 0],
+            "velocity": [0, 0, -2.04085]
+        }
+    ]
+}

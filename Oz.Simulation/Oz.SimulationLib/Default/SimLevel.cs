@@ -82,6 +82,7 @@ public sealed class SimLevel : ISimLevel
         {
             await simObject.DestroyAsync().ConfigureAwait(false);
         }
+        _simObjects.Clear();
         _logger.LogInformation("SimLevel {Name} is destroyed", Name);
     }
 
@@ -199,7 +200,7 @@ public sealed class SimLevel : ISimLevel
         return default;
     }
 
-    private string GetDefaultName() => $"{nameof(SimLevel)}";
+    private static string GetDefaultName() => $"{nameof(SimLevel)}";
 
     public override string ToString() => $"[Lvl: {Id}:{Name}]";
 }

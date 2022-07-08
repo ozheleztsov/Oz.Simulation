@@ -7,4 +7,5 @@ public interface ISimulator
     Task FinishSimulationAsync();
     ISimContext? Context { get; }
     ISimWorld? World { get; }
+    bool IsPrepared { get; }
 }

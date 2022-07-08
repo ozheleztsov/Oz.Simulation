@@ -8,7 +8,9 @@
         xmlns:shapes="clr-namespace:Oz.Simulation.ClientLib.Objects;assembly=Oz.Simulation.ClientLib"
         xmlns:tools="clr-namespace:Oz.Simulation.ClientLib.Tools;assembly=Oz.Simulation.ClientLib"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        PreviewKeyDown="_mainViewport_OnPreviewKeyDown"
+        PreviewMouseMove="_mainViewport_OnPreviewMouseMove">
     <Window.Resources>
 
     </Window.Resources>
@@ -21,6 +23,7 @@
             <i:InvokeCommandAction Command="{Binding UnloadedCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -28,9 +31,10 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <MenuItem Header="Samples">
+                <MenuItem Header="Restart Simulation" Command="{Binding RestartSimulationCommand}"></MenuItem>
             </MenuItem>
         </Menu>
-        <Viewport3D Grid.Row="1" x:Name="_mainViewport">
+        <Viewport3D Grid.Row="1" x:Name="_mainViewport" >
             <Viewport3D.Camera>
                 <!-- <PerspectiveCamera Position="40,70,60" LookDirection="-40,-70,-60"></PerspectiveCamera> -->
                 <!-- <OrthographicCamera x:Name="_mainCamera"  -->

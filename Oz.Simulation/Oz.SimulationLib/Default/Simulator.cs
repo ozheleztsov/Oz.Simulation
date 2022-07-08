@@ -5,16 +5,14 @@ namespace Oz.SimulationLib.Default;
 
 public class Simulator : ISimulator
 {
-    private readonly ITime _time;
+    private const double NormalFrameLength = 0.016666667;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IMessageChannel _messageChannel;
-    private Task? _simulationTask;
+    private readonly ITime _time;
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _isSimulationRunning;
-    private bool _isPrepared;
+    private Task? _simulationTask;
 
-    private const double NormalFrameLength = 0.016666667;
-    
     public Simulator(ITime time, IMessageChannel messageChannel, ILoggerFactory loggerFactory)
     {
         _time = time;
@@ -23,9 +21,11 @@ public class Simulator : ISimulator
         _time.Initialize();
     }
 
+    public bool IsPrepared { get; private set; }
+
     public async Task PrepareSimulationAsync()
     {
-        switch (_isPrepared)
+        switch (IsPrepared)
         {
             case true:
                 throw new InvalidOperationException($"{nameof(PrepareSimulationAsync)} can be called only once");
@@ -34,23 +34,25 @@ public class Simulator : ISimulator
                 World = new SimWorld(Context, Guid.NewGuid(), "World", _loggerFactory);
                 _cancellationTokenSource = new CancellationTokenSource();
                 await World.InitializeAsync();
-                _isPrepared = true;
+                IsPrepared = true;
                 break;
         }
     }
 
     public Task<Task> StartSimulationAsync()
     {
-        if (!_isPrepared)
+        if (!IsPrepared)
         {
             throw new InvalidOperationException(
                 $"{nameof(StartSimulationAsync)} can be called only on prepared simulation. Call {nameof(PrepareSimulationAsync)} before");
         }
+
         if (_cancellationTokenSource == null)
         {
             throw new InvalidOperationException(
                 $"{nameof(_cancellationTokenSource)} can't be null when simulation starts");
         }
+
         var token = _cancellationTokenSource.Token;
 
         async Task RenderFunc()
@@ -67,12 +69,13 @@ public class Simulator : ISimulator
                 {
                     throw new NullReferenceException(nameof(Context));
                 }
+
                 _time.Frame();
                 await World.UpdateAsync().ConfigureAwait(false);
-
+                
                 if (_time.DeltaTime < NormalFrameLength)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(NormalFrameLength), token).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(NormalFrameLength - _time.DeltaTime), token).ConfigureAwait(false);
                 }
             }
         }
@@ -85,37 +88,36 @@ public class Simulator : ISimulator
 
     public async Task FinishSimulationAsync()
     {
-        if (!_isPrepared)
+        if (!IsPrepared)
         {
-            throw new InvalidOperationException(
-                $"{nameof(FinishSimulationAsync)} can be called only on prepared simulation");
+            return;
         }
+
         if (!_isSimulationRunning)
         {
-            throw new InvalidOperationException($"{nameof(FinishSimulationAsync)} can be called on running simulation");
+            return;
         }
 
         if (World == null)
         {
-            throw new InvalidOperationException($"{nameof(World)} must be not null when simulation finishes");
+            return;
         }
 
         if (Context == null)
         {
-            throw new InvalidOperationException($"{nameof(Context)} must be not null when simulation finishes");
+            return;
         }
-        
+
         if (_cancellationTokenSource == null)
         {
-            throw new InvalidOperationException(
-                $"{nameof(_cancellationTokenSource)} cant be null when simulation finishes");
+            return;
         }
 
         if (_simulationTask == null)
         {
-            throw new InvalidOperationException($"{nameof(_simulationTask)} cant be null when simulation finishes");
+            return;
         }
-        
+
         await World.DestroyAsync().ConfigureAwait(false);
         _cancellationTokenSource.Cancel();
         try
@@ -123,14 +125,15 @@ public class Simulator : ISimulator
             await _simulationTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException)
-        { }
+        {
+        }
 
         _cancellationTokenSource.Dispose();
         _cancellationTokenSource = null;
         Context = null;
         World = null;
         _isSimulationRunning = false;
-        _isPrepared = false;
+        IsPrepared = false;
     }
 
     public ISimContext? Context { get; private set; }

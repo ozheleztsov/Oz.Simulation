@@ -2,9 +2,9 @@
 
 public readonly struct Vector3
 {
-    public readonly double X { get; }
-    public readonly double Y { get; }
-    public readonly double Z { get; }
+    public double X { get; }
+    public double Y { get; }
+    public double Z { get; }
 
     public Vector3() =>
         X = Y = Z = 0.0;
@@ -43,11 +43,11 @@ public readonly struct Vector3
         }
     }
 
-    public readonly double MagnitudeSqr => (X * X) + (Y * Y) + (Z * Z);
+    public double MagnitudeSqr => (X * X) + (Y * Y) + (Z * Z);
 
-    public readonly double Magnitude => Math.Sqrt(MagnitudeSqr);
+    public double Magnitude => Math.Sqrt(MagnitudeSqr);
 
-    public readonly Vector3 Normalized
+    public Vector3 Normalized
     {
         get
         {
@@ -57,10 +57,10 @@ public readonly struct Vector3
     }
 
     public static Vector3 operator +(Vector3 v1, Vector3 v2) =>
-        new Vector3(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z);
+        new(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z);
 
     public static Vector3 operator -(Vector3 v1, Vector3 v2) =>
-        new Vector3(v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z);
+        new(v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z);
 
     public static double Dot(Vector3 v1, Vector3 v2) =>
         (v1.X * v2.X) + (v1.Y * v2.Y) + (v1.Z * v2.Z);
@@ -74,7 +74,7 @@ public readonly struct Vector3
     }
 
     public static Vector3 operator -(Vector3 v) =>
-        new Vector3(-v.X, -v.Y, -v.Z);
+        new(-v.X, -v.Y, -v.Z);
 
     public override readonly string ToString() =>
         $"[{X}, {Y}, {Z}]";

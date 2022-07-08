@@ -1,13 +1,13 @@
 ﻿using Oz.Simulation.Client.Contracts.Services;
 using Oz.Simulation.Client.Contracts.Windows;
-using Oz.Simulation.Client.SampleWindows;
+using Oz.Simulation.Client.Extensions;
 using Oz.Simulation.Client.ViewModels;
 using Oz.Simulation.ClientLib.Contracts;
-using Oz.Simulation.ClientLib.Objects;
 using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
@@ -18,15 +18,14 @@ namespace Oz.Simulation.Client;
 /// </summary>
 public partial class MainWindow : Window, IMainWindow
 {
-    private readonly ISimulationViewportService _simulationViewportService;
     private readonly IAsyncService _asyncService;
+    private readonly ISimulationViewportService _simulationViewportService;
     private readonly Stopwatch _stopwatch = new();
     private long _frameCounter;
+    private Point _from;
     private TimeSpan _previousElapsed;
 
-    public Viewport3D MainViewport => _mainViewport;
-    
-    public MainWindow(MainWindowViewModel mainWindowViewModel, 
+    public MainWindow(MainWindowViewModel mainWindowViewModel,
         ISimulationViewportService simulationViewportService,
         IAsyncService asyncService)
     {
@@ -36,7 +35,9 @@ public partial class MainWindow : Window, IMainWindow
         DataContext = mainWindowViewModel;
         CompositionTarget.Rendering += OnRender;
     }
-    
+
+    public Viewport3D MainViewport => _mainViewport;
+
     private void OnRender(object? sender, EventArgs e)
     {
         if (_frameCounter == 0)
@@ -62,9 +63,28 @@ public partial class MainWindow : Window, IMainWindow
             _fpsText.Text = $"Elapsed: {_stopwatch.Elapsed}, Frame: {_frameCounter}, FPS: {frameRate}";
         }
 
-        _asyncService.ExecuteOnUiThreadAsync(async () =>
+        _asyncService.ExecuteOnUiThreadAsync(async () => { await _simulationViewportService.RenderAsync(); });
+    }
+
+    private void _mainViewport_OnPreviewKeyDown(object sender, KeyEventArgs e) =>
+        _mainCamera.MoveBy(e.Key).RotateBy(e.Key);
+
+    private void _mainViewport_OnPreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        var till = e.GetPosition(sender as IInputElement);
+        var dx = till.X - _from.X;
+        var dy = till.Y - _from.Y;
+        _from = till;
+        var distance = (dx * dx) + (dy * dy);
+        if (distance <= 0)
         {
-            await _simulationViewportService.RenderAsync();
-        });
+            return;
+        }
+
+        if (e.MouseDevice.LeftButton is MouseButtonState.Pressed)
+        {
+            var angle = distance / _mainCamera.FieldOfView % 45;
+            _mainCamera.Rotate(new Vector3D(dy, -dx, 0d), angle);
+        }
     }
 }

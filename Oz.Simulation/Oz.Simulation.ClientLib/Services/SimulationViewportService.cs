@@ -14,10 +14,9 @@ namespace Oz.Simulation.ClientLib.Services;
 
 public class SimulationViewportService : ISimulationViewportService
 {
+    private readonly Dictionary<Guid, PlanetGraphic> _models = new();
     private readonly ISimulationService _simulationService;
     private readonly IWindowService _windowService;
-
-    private readonly Dictionary<Guid, PlanetGraphic> _models = new();
 
     public SimulationViewportService(IWindowService windowService, ISimulationService simulationService)
     {
@@ -81,12 +80,16 @@ public class SimulationViewportService : ISimulationViewportService
                 Material = new DiffuseMaterial(Brushes.Brown)
             };
 
-            Point3DCollection trajectoryPoints = new Point3DCollection();
+            var trajectoryPoints = new Point3DCollection();
 
-            ScreenSpaceLines3D trajectryUi = new ScreenSpaceLines3D() {Color = Colors.Brown, Points = trajectoryPoints};
-            _models.Add(id, new PlanetGraphic(planetModel, trajectryUi, new List<Vector3>()));
+            var trajectoryUi = new ScreenSpaceLines3D
+            {
+                Color = Colors.Brown,
+                Points = trajectoryPoints
+            };
+            _models.Add(id, new PlanetGraphic(planetModel, trajectoryUi, new List<Vector3>()));
             viewport.Children.Add(planetModel);
-            viewport.Children.Add(trajectryUi);
+            viewport.Children.Add(trajectoryUi);
         }
 
         foreach (var (id, pos) in planetPositions)
@@ -100,18 +103,18 @@ public class SimulationViewportService : ISimulationViewportService
             var trajectoryPoints = _models[id].TrajectoryPoints;
             trajectoryPoints.AddPointIfFurther(pos);
 
-            if (trajectoryPoints.Count > 10000)
+            if (trajectoryPoints.Count > 100)
             {
-                while (trajectoryPoints.Count > 9000)
+                while (trajectoryPoints.Count > 90)
                 {
-                    trajectoryPoints.RemoveRange(0, 1001);
+                    trajectoryPoints.RemoveRange(0, 11);
                 }
             }
 
             var trajectoryUi = _models[id].TrajectoryUi;
-            
+
             translate.ApplyPosition(pos);
-            trajectoryUi.ApplyPoints(trajectoryPoints);
+            trajectoryUi?.ApplyPoints(trajectoryPoints);
         }
     }
 }

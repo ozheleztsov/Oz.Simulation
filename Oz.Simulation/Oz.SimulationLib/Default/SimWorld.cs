@@ -79,12 +79,22 @@ public sealed class SimWorld : ISimWorld
         }
 
         _destroyed = true;
+        await DestroyAllLevelsAsync().ConfigureAwait(false);
+    }
+
+    public async Task DestroyAllLevelsAsync()
+    {
         foreach (var (_, simLevel) in _simLevels)
         {
             _context.Prepare(this, simLevel);
             await simLevel.DestroyAsync().ConfigureAwait(false);
         }
+
+        ActiveLevel = null;
+        _simLevels.Clear();        
     }
+    
+    
 
     public ISimLevel? ActiveLevel { get; private set; }
 

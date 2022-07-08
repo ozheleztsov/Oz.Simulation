@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Oz.Simulation.Client.Contracts.Services;
 using Oz.Simulation.Client.Contracts.Windows;
 using Oz.Simulation.Client.HostedServices;
+using Oz.Simulation.Client.Models.Settings;
 using Oz.Simulation.Client.Services;
 using Oz.Simulation.Client.ViewModels;
 using Oz.Simulation.ClientLib.Contracts;
@@ -72,6 +73,7 @@ namespace Oz.Simulation.Client
 
         private void ConfigureServices(HostBuilderContext context, IServiceCollection serviceCollection)
         {
+            serviceCollection.Configure<SimulationSettings>(context.Configuration.GetSection("Simulation"));
             serviceCollection.AddSingleton<IAsyncService, AsyncService>();
             serviceCollection.AddTransient<MainWindowViewModel>();
             serviceCollection.AddTransient<IMainWindow, MainWindow>();
@@ -80,6 +82,7 @@ namespace Oz.Simulation.Client
             serviceCollection.AddSingleton<ISimulationService, SimulationService>();
             serviceCollection.AddSingleton<IWindowService, WindowService>();
             serviceCollection.AddSingleton<ISimulationViewportService, SimulationViewportService>();
+            serviceCollection.AddSingleton<IObjectModelReader, ObjectModelFileReader>();
         }
 
         private async void OnStartup(object sender, StartupEventArgs e)

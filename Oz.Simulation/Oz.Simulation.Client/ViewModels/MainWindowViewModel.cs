@@ -11,6 +11,7 @@ public class MainWindowViewModel : ObservableRecipient
     private readonly ISimulationService _simulationService;
     private AsyncRelayCommand? _loadedCommand;
     private ICommand? _unloadedCommand;
+    private AsyncRelayCommand? _restartSimulationCommand;
 
     public MainWindowViewModel(ISimulationService simulationService) =>
         _simulationService = simulationService;
@@ -21,10 +22,16 @@ public class MainWindowViewModel : ObservableRecipient
     public ICommand UnloadedCommand =>
         _unloadedCommand ??= new RelayCommand(OnUnloaded);
 
+    public IAsyncRelayCommand RestartSimulationCommand =>
+        _restartSimulationCommand ??= new AsyncRelayCommand(async () =>
+        {
+            await _simulationService.PrepareSimulationAsync().ConfigureAwait(false);
+        });
+
     private async Task OnLoadedAsync()
     {
         IsActive = true;
-        await _simulationService.PrepareSimulationAsync().ConfigureAwait(false);
+        
     }
 
     private void OnUnloaded()

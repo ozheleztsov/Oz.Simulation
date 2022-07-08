@@ -11,4 +11,6 @@ public interface ISimWorld : ISimEntity
     Task<ISimLevel> AddLevelAsync(string name);
 
     void MakeActive(Guid levelId);
+
+    Task DestroyAllLevelsAsync();
 }

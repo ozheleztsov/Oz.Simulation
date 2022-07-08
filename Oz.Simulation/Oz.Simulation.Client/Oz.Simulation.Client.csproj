@@ -17,4 +17,13 @@
       <ProjectReference Include="..\Oz.Simulation.ClientLib\Oz.Simulation.ClientLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="objects.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

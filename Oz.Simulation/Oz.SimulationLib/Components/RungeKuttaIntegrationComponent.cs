@@ -73,12 +73,7 @@ public class RungeKuttaIntegrationComponent : SimComponent
     {
         var result = new List<(Vector3 Velocity, Vector3 Position)>(integrationObjects.Count);
         var nextPositionVelocitiesMasses = GetUpdatedPositionVelocitiesInternal(integrationObjects, deltaTime);
-
-        for (var i = 0; i < nextPositionVelocitiesMasses.Length; i++)
-        {
-            result.Add((nextPositionVelocitiesMasses[i].Velocity, nextPositionVelocitiesMasses[i].Position));
-        }
-
+        result.AddRange(nextPositionVelocitiesMasses.Select(nextPositionVelocityMass => (nextPositionVelocityMass.Velocity, nextPositionVelocityMass.Position)));
         return result;
     }
 
