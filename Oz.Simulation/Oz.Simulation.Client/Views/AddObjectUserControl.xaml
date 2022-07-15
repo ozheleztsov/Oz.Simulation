@@ -84,47 +84,8 @@
                     <TextBlock Style="{StaticResource TextBlockStyle}"
                                Text="Generate parameters"></TextBlock>
                 </TabItem.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource TextBlockStyle}"
-                               Text="Count of objects:"></TextBlock>
-                    <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource TextBoxStyle}"
-                             Text="{Binding CountOfObjects, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-                    
-                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource TextBlockStyle}"
-                               Text="Mass range"></TextBlock>
-                    <local:DoubleRangeUserControl Grid.Row="1" Grid.Column="1"
-                                                  DataContext="{Binding MassRange, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></local:DoubleRangeUserControl>
-
-                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource TextBlockStyle}"
-                               Text="Position range"></TextBlock>
-                    <local:VectorRangeUserControl Grid.Row="2" Grid.Column="1"
-                                                  DataContext="{Binding PositionRange, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></local:VectorRangeUserControl>
-
-                    <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource TextBlockStyle}"
-                               Text="Velocity range"></TextBlock>
-                    <local:VectorRangeUserControl Grid.Row="3" Grid.Column="1"
-                                                  DataContext="{Binding VelocityRange, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></local:VectorRangeUserControl>
-
-                    <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right">
-                        <Button Style="{StaticResource ButtonStyle}"
-                                Content="Generate"
-                                Command="{Binding GenerateCommand}"></Button>
-                    </StackPanel>
-                </Grid>
+                <local:AddObjectByRandomParametersUserControl x:Name="_addObjectByRandomParametersUserControl"
+                                                              DataContext="{Binding RandomParameters, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></local:AddObjectByRandomParametersUserControl>
             </TabItem>
         </TabControl>
     </Grid>

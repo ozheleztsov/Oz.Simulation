@@ -63,7 +63,7 @@ public class SimulationService : ISimulationService
 
         RungeKuttaIntegrationComponent? integrationComponent = null;
 
-        if (_simulator.Context != null && _simulator.Context.Level != null)
+        if (_simulator.Context is {Level: { }})
         {
             var integrators = await Context.Level!.FindComponentsAsync<RungeKuttaIntegrationComponent>();
             var rungeKuttaIntegrationComponents =

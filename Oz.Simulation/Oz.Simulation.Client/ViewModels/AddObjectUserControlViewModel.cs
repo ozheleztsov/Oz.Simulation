@@ -18,11 +18,13 @@ public class AddObjectUserControlViewModel : ObservableObject
     private RelayCommand? _cancelCommand;
     private AsyncRelayCommand? _applyCommand;
     private RelayCommand? _generateRandomCommand;
+    private AddObjectByRandomParametersUserControlViewModel _randomParameters;
 
     public AddObjectUserControlViewModel(ISimulationService simulationService, IDialogService dialogService)
     {
         _simulationService = simulationService;
         _dialogService = dialogService;
+        _randomParameters = new AddObjectByRandomParametersUserControlViewModel(simulationService, dialogService);
     }
 
     public RelayCommand CancelCommand =>
@@ -102,5 +104,11 @@ public class AddObjectUserControlViewModel : ObservableObject
         }
 
         return dMass;
+    }
+
+    public AddObjectByRandomParametersUserControlViewModel RandomParameters
+    {
+        get => _randomParameters;
+        set => SetProperty(ref _randomParameters, value);
     }
 }
