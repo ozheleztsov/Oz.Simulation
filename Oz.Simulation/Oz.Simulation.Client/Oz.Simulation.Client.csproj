@@ -26,4 +26,9 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="ViewModels\Dialogs\" />
+      <Folder Include="Views\Dialogs\" />
+    </ItemGroup>
+
 </Project>

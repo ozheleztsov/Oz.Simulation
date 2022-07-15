@@ -60,7 +60,7 @@ public partial class MainWindow : Window, IMainWindow
         var frameRate = (long)(_frameCounter / _stopwatch.Elapsed.TotalSeconds);
         if (frameRate > 0)
         {
-            _fpsText.Text = $"Elapsed: {_stopwatch.Elapsed}, Frame: {_frameCounter}, FPS: {frameRate}";
+            //_fpsText.Text = $"Elapsed: {_stopwatch.Elapsed}, Frame: {_frameCounter}, FPS: {frameRate}";
         }
 
         _asyncService.ExecuteOnUiThreadAsync(async () => { await _simulationViewportService.RenderAsync(); });
@@ -81,10 +81,10 @@ public partial class MainWindow : Window, IMainWindow
             return;
         }
 
-        if (e.MouseDevice.LeftButton is MouseButtonState.Pressed)
-        {
-            var angle = distance / _mainCamera.FieldOfView % 45;
-            _mainCamera.Rotate(new Vector3D(dy, -dx, 0d), angle);
-        }
+        //if (e.MouseDevice.LeftButton is MouseButtonState.Pressed)
+        //{
+        //    var angle = distance / _mainCamera.FieldOfView % 45;
+        //    _mainCamera.Rotate(new Vector3D(dy, -dx, 0d), angle);
+        //}
     }
 }

@@ -84,4 +84,6 @@ public readonly struct Vector3
     
     public static Vector3 operator *(Vector3 v, double d) =>
         new(d * v.X, d * v.Y, d * v.Z);
+
+    public static explicit operator double[](Vector3 vector) => new[] {vector.X, vector.Y, vector.Z};
 }

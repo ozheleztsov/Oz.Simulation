@@ -83,6 +83,7 @@ namespace Oz.Simulation.Client
             serviceCollection.AddSingleton<IWindowService, WindowService>();
             serviceCollection.AddSingleton<ISimulationViewportService, SimulationViewportService>();
             serviceCollection.AddSingleton<IObjectModelReader, ObjectModelFileReader>();
+            serviceCollection.AddSingleton<IDialogService, DialogService>();
         }
 
         private async void OnStartup(object sender, StartupEventArgs e)

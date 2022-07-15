@@ -1,4 +1,5 @@
-﻿using Oz.SimulationLib.Core;
+﻿using Oz.Simulation.ClientLib.Models;
+using Oz.SimulationLib.Core;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,4 +11,6 @@ public interface ISimulationService
     Task PrepareSimulationAsync();
 
     Task<Dictionary<Guid, Vector3>> GetPlanetPositionsAsync();
+
+    Task<OperationResult> AddObjectToSimulationAsync(ObjectModel objectModel);
 }

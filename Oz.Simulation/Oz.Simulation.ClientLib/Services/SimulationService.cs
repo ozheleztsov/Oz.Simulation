@@ -43,6 +43,52 @@ public class SimulationService : ISimulationService
         return obj;
     }
 
+    public async Task<OperationResult> AddObjectToSimulationAsync(ObjectModel objectModel)
+    {
+        OperationResult operationResult = new();
+        if (_simulator.Context is null)
+        {
+            operationResult.AddError(nameof(Context), "Simulator context is null");
+        }
+
+        if (_simulator.World is null)
+        {
+            operationResult.AddError(nameof(World), "Simulator world is null");
+        }
+
+        if (_simulator.Context is {Level: null})
+        {
+            operationResult.AddError("Level", "Context Level is null");
+        }
+
+        RungeKuttaIntegrationComponent? integrationComponent = null;
+
+        if (_simulator.Context != null && _simulator.Context.Level != null)
+        {
+            var integrators = await Context.Level!.FindComponentsAsync<RungeKuttaIntegrationComponent>();
+            var rungeKuttaIntegrationComponents =
+                integrators as RungeKuttaIntegrationComponent[] ?? integrators.ToArray();
+            if (!rungeKuttaIntegrationComponents.Any())
+            {
+                operationResult.AddError(nameof(RungeKuttaIntegrationComponent), "No integrators in level");
+            }
+            else
+            {
+                integrationComponent = rungeKuttaIntegrationComponents.Single();
+            }
+        }
+
+        if (operationResult.HasErrors)
+        {
+            return operationResult;
+        }
+
+        var simObject = await CreateSimObject(Context, objectModel).ConfigureAwait(false);
+        await Context.Level!.AddObjectAsync(simObject).ConfigureAwait(false);
+        integrationComponent!.SetMarkToReloadObjects();
+        return operationResult;
+    }
+
     public async Task PrepareSimulationAsync()
     {
         await _simulator.FinishSimulationAsync().ConfigureAwait(false);

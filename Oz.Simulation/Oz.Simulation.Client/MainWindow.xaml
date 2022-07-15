@@ -7,6 +7,7 @@
         xmlns:local="clr-namespace:Oz.Simulation.Client"
         xmlns:shapes="clr-namespace:Oz.Simulation.ClientLib.Objects;assembly=Oz.Simulation.ClientLib"
         xmlns:tools="clr-namespace:Oz.Simulation.ClientLib.Tools;assembly=Oz.Simulation.ClientLib"
+        xmlns:views="clr-namespace:Oz.Simulation.Client.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         PreviewKeyDown="_mainViewport_OnPreviewKeyDown"
@@ -27,14 +28,21 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <MenuItem Header="Samples">
                 <MenuItem Header="Restart Simulation" Command="{Binding RestartSimulationCommand}"></MenuItem>
+                <MenuItem Header="Add Object" Command="{Binding AddObjectCommand}"></MenuItem>
             </MenuItem>
         </Menu>
-        <Viewport3D Grid.Row="1" x:Name="_mainViewport" >
+        <Grid Grid.Row="1">
+            <views:AddObjectUserControl x:Name="AddObjectUserControl"
+                                        Panel.ZIndex="10"
+                                        DataContext="{Binding AddObjectViewModel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></views:AddObjectUserControl>
+        </Grid>
+        <Viewport3D Grid.Row="2" x:Name="_mainViewport" >
             <Viewport3D.Camera>
                 <!-- <PerspectiveCamera Position="40,70,60" LookDirection="-40,-70,-60"></PerspectiveCamera> -->
                 <!-- <OrthographicCamera x:Name="_mainCamera"  -->
@@ -67,6 +75,6 @@
                 </ModelVisual3D.Content>
             </ModelVisual3D>
         </Viewport3D>
-        <TextBlock Grid.Row="1" Foreground="Black" Text="" x:Name="_fpsText"></TextBlock>
+        <!-- <TextBlock Grid.Row="1" Foreground="Black" Text="" x:Name="_fpsText"></TextBlock> -->
     </Grid>
 </Window>

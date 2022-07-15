@@ -11,6 +11,7 @@ public class RungeKuttaIntegrationComponent : SimComponent
 {
     private readonly List<IntegrationObject> _integrationObjects = new();
     private bool _isPrepared;
+    private bool _markedToReloadObjects = false;
 
     public RungeKuttaIntegrationComponent(ISimContext context, ISimObject owner, ILogger logger, Guid? id = null,
         string? name = null) : base(context, owner, logger, id, name)
@@ -18,10 +19,19 @@ public class RungeKuttaIntegrationComponent : SimComponent
     }
 
     public ConcurrentDictionary<Guid, Vector3> OutputPositions { get; } = new();
-    public double DeltaTime { get; set; } = 1.0 / 365;
+    public double DeltaTime { get; set; } = 1.0 / 365; //1 day
+
+    public double DistanceSoftValue { get; set; } = 1E-5; //AU;
 
     public async Task PrepareAsync()
     {
+        await ReloadSimObjectsAsync().ConfigureAwait(false);
+        _isPrepared = true;
+    }
+
+    private async Task ReloadSimObjectsAsync()
+    {
+        OutputPositions.Clear();
         _integrationObjects.Clear();
         var currentLevel = Context.Level ?? throw new SimulationException("Level is null");
         var simObjects3D = await currentLevel.FindAsync(obj => obj is SimObject3D).ConfigureAwait(false);
@@ -33,15 +43,21 @@ public class RungeKuttaIntegrationComponent : SimComponent
             var mass = await simObj3d.GetMassAsync().ConfigureAwait(false);
             _integrationObjects.Add(new IntegrationObject(simObj3d, transform, velocity, mass));
         }
-
-        _isPrepared = true;
     }
+
+    public void SetMarkToReloadObjects() => _markedToReloadObjects = true;
 
     public override async Task OnUpdateAsync()
     {
         if (!_isPrepared)
         {
             return;
+        }
+
+        if (_markedToReloadObjects)
+        {
+            await ReloadSimObjectsAsync().ConfigureAwait(false);
+            _markedToReloadObjects = false;
         }
 
         IntegrateStep(_integrationObjects, DeltaTime);
@@ -58,8 +74,8 @@ public class RungeKuttaIntegrationComponent : SimComponent
         }
     }
 
-    private void AdvanceIntegrationObjectsPositions(List<IntegrationObject> integrationObjects,
-        List<(Vector3 Velocity, Vector3 Position)> newVelocitiesPositions)
+    private static void AdvanceIntegrationObjectsPositions(List<IntegrationObject> integrationObjects,
+        IReadOnlyList<(Vector3 Velocity, Vector3 Position)> newVelocitiesPositions)
     {
         for (var i = 0; i < integrationObjects.Count; i++)
         {
@@ -69,7 +85,7 @@ public class RungeKuttaIntegrationComponent : SimComponent
     }
 
     private List<(Vector3 Velocity, Vector3 Position)> GetUpdatedPositionVelocities(
-        List<IntegrationObject> integrationObjects, double deltaTime)
+        IReadOnlyCollection<IntegrationObject> integrationObjects, double deltaTime)
     {
         var result = new List<(Vector3 Velocity, Vector3 Position)>(integrationObjects.Count);
         var nextPositionVelocitiesMasses = GetUpdatedPositionVelocitiesInternal(integrationObjects, deltaTime);
@@ -77,7 +93,7 @@ public class RungeKuttaIntegrationComponent : SimComponent
         return result;
     }
 
-    private PositionVelocityMass[] GetUpdatedPositionVelocitiesInternal(List<IntegrationObject> previousObjects,
+    private IEnumerable<PositionVelocityMass> GetUpdatedPositionVelocitiesInternal(IEnumerable<IntegrationObject> previousObjects,
         double deltaTime)
     {
         var sourcePositionVelocityMass = previousObjects.Select(io => new PositionVelocityMass(
@@ -135,11 +151,11 @@ public class RungeKuttaIntegrationComponent : SimComponent
         return result;
     }
 
-    private PositionVelocityMass[] GetKValues(PositionVelocityMass[] sourceValues, double deltaTime)
+    private PositionVelocityMass[] GetKValues(IReadOnlyList<PositionVelocityMass> sourceValues, double deltaTime)
     {
-        var result = new PositionVelocityMass[sourceValues.Length];
+        var result = new PositionVelocityMass[sourceValues.Count];
 
-        for (var i = 0; i < sourceValues.Length; i++)
+        for (var i = 0; i < sourceValues.Count; i++)
         {
             var k1Velocity = deltaTime * GetAcceleration(sourceValues, i);
             var k1Position = deltaTime * GetVelocity(sourceValues, i);
@@ -165,14 +181,16 @@ public class RungeKuttaIntegrationComponent : SimComponent
             var mj = previousObjects[i].Mass;
             var rj = previousObjects[i].Position;
             var diff = rTarget - rj;
-            var diffMag3 = Math.Pow(diff.Magnitude, 3);
+
+            var distance = diff.Magnitude < DistanceSoftValue ? DistanceSoftValue : diff.Magnitude;
+            var diffMag3 = Math.Pow(distance, 3);
             result += Constants.G * mj / diffMag3 * diff;
         }
 
         return -result;
     }
 
-    private Vector3 GetVelocity(IReadOnlyList<PositionVelocityMass> previousObjects, int targetObjectIndex) =>
+    private static Vector3 GetVelocity(IReadOnlyList<PositionVelocityMass> previousObjects, int targetObjectIndex) =>
         previousObjects[targetObjectIndex].Velocity;
 }
 
