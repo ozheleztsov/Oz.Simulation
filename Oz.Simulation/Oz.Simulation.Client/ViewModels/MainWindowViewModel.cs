@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using Oz.Simulation.Client.Contracts.Services;
 using Oz.Simulation.ClientLib.Contracts;
@@ -16,10 +17,10 @@ public class MainWindowViewModel : ObservableRecipient
     private RelayCommand? _addObjectCommand;
     private AddObjectUserControlViewModel _addObjectViewModel;
 
-    public MainWindowViewModel(ISimulationService simulationService, IDialogService dialogService)
+    public MainWindowViewModel(ISimulationService simulationService, IDialogService dialogService, IAsyncService asyncService, ILoggerFactory loggerFactory)
     {
         _simulationService = simulationService;
-        _addObjectViewModel = new AddObjectUserControlViewModel(simulationService, dialogService);
+        _addObjectViewModel = new AddObjectUserControlViewModel(simulationService, dialogService, asyncService, loggerFactory);
     }
 
     public AsyncRelayCommand LoadedCommand =>
@@ -44,6 +45,18 @@ public class MainWindowViewModel : ObservableRecipient
     {
         get => _addObjectViewModel;
         set => SetProperty(ref _addObjectViewModel, value);
+    }
+
+    protected override void OnActivated()
+    {
+        base.OnActivated();
+        _addObjectViewModel.IsActive = true;
+    }
+
+    protected override void OnDeactivated()
+    {
+        _addObjectViewModel.IsActive = false;
+        base.OnDeactivated();
     }
 
     private async Task OnLoadedAsync()

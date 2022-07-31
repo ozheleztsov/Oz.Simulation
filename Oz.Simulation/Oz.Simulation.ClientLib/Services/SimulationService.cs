@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Oz.Simulation.ClientLib.Components;
 using Oz.Simulation.ClientLib.Contracts;
+using Oz.Simulation.ClientLib.Messages;
 using Oz.Simulation.ClientLib.Models;
 using Oz.SimulationLib.Components;
 using Oz.SimulationLib.Contracts;
@@ -19,6 +21,8 @@ public class SimulationService : ISimulationService
     private readonly ISimulator _simulator;
     private readonly IObjectModelReader _objectModelReader;
 
+    private IAsyncDisposable? _statsSubscription;
+    
     public SimulationService(ISimulator simulator, IObjectModelReader objectModelReader, ILoggerFactory loggerFactory)
     {
         _simulator = simulator;
@@ -26,36 +30,28 @@ public class SimulationService : ISimulationService
         _loggerFactory = loggerFactory;
     }
 
-    private ISimWorld World => _simulator.World ?? throw new SimulationException("World is null");
+    public async Task InitializeAsync() =>
+        // register for update of the system stats
+        _statsSubscription = await _simulator.Context.MessageChannel.RegisterAsync(new StatsHandler(this))
+            .ConfigureAwait(false);
 
-    private ISimContext Context => _simulator.Context ?? throw new SimulationException("Context is not set");
-
-
-    private async Task<ISimObject> CreateSimObject(ISimContext simContext, ObjectModel objectModel)
+    public async Task ShutdownAsync()
     {
-        var obj = new SimObject3D(simContext, Guid.NewGuid(), objectModel.Name, _loggerFactory);
-        var massComponent = await obj.GetMassAsync().ConfigureAwait(false);
-        var transformComponent = await obj.GetTransformAsync().ConfigureAwait(false);
-        var velocityComponent = await obj.GetVelocityAsync().ConfigureAwait(false);
-        massComponent.SetMass(objectModel.Mass);
-        transformComponent.Position = new Vector3(objectModel.Position);
-        velocityComponent.Velocity = new Vector3(objectModel.Velocity);
-        return obj;
+        if (_statsSubscription != null)
+        {
+            // unregister system stats message
+            await _statsSubscription.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
+    private ISimWorld World => _simulator.World;
+
+    private ISimContext Context => _simulator.Context;
+    
     public async Task<OperationResult> AddObjectToSimulationAsync(ObjectModel objectModel)
     {
         OperationResult operationResult = new();
-        if (_simulator.Context is null)
-        {
-            operationResult.AddError(nameof(Context), "Simulator context is null");
-        }
-
-        if (_simulator.World is null)
-        {
-            operationResult.AddError(nameof(World), "Simulator world is null");
-        }
-
+        
         if (_simulator.Context is {Level: null})
         {
             operationResult.AddError("Level", "Context Level is null");
@@ -89,6 +85,8 @@ public class SimulationService : ISimulationService
         return operationResult;
     }
 
+    public StatsMessage? Stats { get; private set; }
+
     public async Task PrepareSimulationAsync()
     {
         await _simulator.FinishSimulationAsync().ConfigureAwait(false);
@@ -114,20 +112,20 @@ public class SimulationService : ISimulationService
         }
         
         var simulationManager = new SimObject(Context, Guid.NewGuid(), "Simulation Manager", _loggerFactory);
+        
         var integrator = await simulationManager.AddComponentAsync<RungeKuttaIntegrationComponent>().ConfigureAwait(false);
         await simulationLevel.AddObjectAsync(simulationManager).ConfigureAwait(false);
         await _simulator.StartSimulationAsync().ConfigureAwait(false);
         await integrator.PrepareAsync().ConfigureAwait(false);
+
+        var statsComponent = await simulationManager.AddComponentAsync<ObjectSystemStatisticsComponent>()
+            .ConfigureAwait(false);
+        
     }
 
     public async Task<Dictionary<Guid, Vector3>> GetPlanetPositionsAsync()
     {
         var world = _simulator.World;
-        if (world is null)
-        {
-            return new Dictionary<Guid, Vector3>();
-        }
-
         var level = world.ActiveLevel;
         if (level is null)
         {
@@ -149,5 +147,34 @@ public class SimulationService : ISimulationService
         }
 
         return positions;
+    }
+    
+    private async Task<ISimObject> CreateSimObject(ISimContext simContext, ObjectModel objectModel)
+    {
+        var obj = new SimObject3D(simContext, Guid.NewGuid(), objectModel.Name, _loggerFactory);
+        var massComponent = await obj.GetMassAsync().ConfigureAwait(false);
+        var transformComponent = await obj.GetTransformAsync().ConfigureAwait(false);
+        var velocityComponent = await obj.GetVelocityAsync().ConfigureAwait(false);
+        massComponent.SetMass(objectModel.Mass);
+        transformComponent.Position = new Vector3(objectModel.Position);
+        velocityComponent.Velocity = new Vector3(objectModel.Velocity);
+        return obj;
+    }
+    
+    private class StatsHandler : IMessageObserver<StatsMessage>
+    {
+        private readonly SimulationService _simulationService;
+
+        public StatsHandler(SimulationService simulationService) =>
+            _simulationService = simulationService;
+
+        public async Task ReceiveAsync(StatsMessage? message)
+        {
+            if (message != null)
+            {
+                _simulationService.Stats = message;
+            }
+            await Task.CompletedTask;
+        }
     }
 }

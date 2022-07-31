@@ -13,4 +13,6 @@ public interface ISimWorld : ISimEntity
     void MakeActive(Guid levelId);
 
     Task DestroyAllLevelsAsync();
+
+    void Reset();
 }

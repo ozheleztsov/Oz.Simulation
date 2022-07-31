@@ -18,6 +18,8 @@ public abstract class SimComponent : ISimComponent
         Owner = owner;
     }
 
+    protected bool Destroyed => _destroyed;
+
     public ISimContext Context { get; }
 
     protected ILogger Logger { get; }

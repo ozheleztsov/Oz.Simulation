@@ -10,8 +10,4 @@
       <ProjectReference Include="..\Oz.SimulationLib\Oz.SimulationLib.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Simulation" />
-    </ItemGroup>
-
 </Project>

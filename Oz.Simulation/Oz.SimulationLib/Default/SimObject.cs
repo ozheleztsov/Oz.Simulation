@@ -38,13 +38,22 @@ public class SimObject : ISimObject
         {
             throw new SimulationException($"{this} already destroyed");
         }
-        foreach (var (_, typedComponents) in _components)
+
+        try
         {
-            foreach (var component in typedComponents)
+            foreach (var (_, typedComponents) in _components)
             {
-                await component.TryInitializeAsync().ConfigureAwait(false);
+                foreach (var component in typedComponents)
+                {
+                    await component.TryInitializeAsync().ConfigureAwait(false);
+                }
             }
         }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Initialization exception");
+        }
+
         _logger.LogInformation("SimObject {Name} is initialized", ToString());
         _initialized = true;
     }

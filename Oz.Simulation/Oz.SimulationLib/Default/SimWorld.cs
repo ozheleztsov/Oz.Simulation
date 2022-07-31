@@ -70,6 +70,13 @@ public sealed class SimWorld : ISimWorld
         }
     }
 
+    public void Reset()
+    {
+        _simLevels.Clear();
+        _destroyed = false;
+        _initialized = false;
+    }
+
     public async Task DestroyAsync()
     {
         if (_destroyed)

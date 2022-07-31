@@ -57,6 +57,8 @@ namespace Oz.Simulation.Client
                     })
                     .ConfigureServices(ConfigureServices)
                     .Build();
+
+                await InitializeServicesAsync();
                 await _host.StartAsync();
             }
             catch (Exception exception)
@@ -68,6 +70,24 @@ namespace Oz.Simulation.Client
                         "Error", MessageBoxButton.OK);
                     Current.Shutdown(-1);
                 });
+            }
+        }
+
+        private async Task InitializeServicesAsync()
+        {
+            var simulationService = GetService<ISimulationService>();
+            if (simulationService != null)
+            {
+                await simulationService.InitializeAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task ShutdownServicesAsync()
+        {
+            var simulationService = GetService<ISimulationService>();
+            if (simulationService != null)
+            {
+                await simulationService.ShutdownAsync().ConfigureAwait(false);
             }
         }
 
@@ -96,6 +116,7 @@ namespace Oz.Simulation.Client
         {
             if (_host != null)
             {
+                await ShutdownServicesAsync();
                 await _host.StopAsync();
                 _host.Dispose();
                 _host = null;

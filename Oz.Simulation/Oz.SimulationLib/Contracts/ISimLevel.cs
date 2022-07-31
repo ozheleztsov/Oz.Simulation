@@ -8,7 +8,7 @@ public interface ISimLevel : ISimEntity
 
     Task<SimObject> AddObjectAsync(string name);
 
-    ISimObject? RemoveObject(Guid id);
+    Task<ISimObject?> RemoveObjectAsync(Guid id);
 
     Task<ISimObject?> FindAsync(Guid id);
 

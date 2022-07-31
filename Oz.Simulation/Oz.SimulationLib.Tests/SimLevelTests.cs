@@ -64,7 +64,7 @@ public class SimLevelTests
         await _sut.InitializeAsync();
         await _sut.AddObjectAsync("test");
         var obj = (await _sut.FindAsync("test")).Single();
-        var result = _sut.RemoveObject(obj.Id);
+        var result = await _sut.RemoveObjectAsync(obj.Id);
 
         result.Should().NotBeNull();
         var cnt = (await _sut.FindAsync(o => true)).Count();

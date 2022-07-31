@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using Oz.Simulation.Client.Contracts.Services;
 using Oz.Simulation.ClientLib.Contracts;
@@ -7,31 +8,32 @@ using System;
 
 namespace Oz.Simulation.Client.ViewModels;
 
-public class AddObjectUserControlViewModel : ObservableObject
+public class AddObjectUserControlViewModel : ObservableRecipient
 {
-    private readonly ISimulationService _simulationService;
     private readonly IDialogService _dialogService;
-    private string _mass = "1.0";
-    private bool _isVisible = false;
-    private Vector3UserControlViewModel _position = new();
-    private Vector3UserControlViewModel _velocity = new();
-    private RelayCommand? _cancelCommand;
+    private readonly ISimulationService _simulationService;
     private AsyncRelayCommand? _applyCommand;
+    private RelayCommand? _cancelCommand;
     private RelayCommand? _generateRandomCommand;
+    private bool _isVisible;
+    private string _mass = "1.0";
+    private Vector3UserControlViewModel _position = new();
     private AddObjectByRandomParametersUserControlViewModel _randomParameters;
+    private Vector3UserControlViewModel _velocity = new();
 
-    public AddObjectUserControlViewModel(ISimulationService simulationService, IDialogService dialogService)
+    public AddObjectUserControlViewModel(ISimulationService simulationService, IDialogService dialogService,
+        IAsyncService asyncService, ILoggerFactory loggerFactory)
     {
         _simulationService = simulationService;
         _dialogService = dialogService;
         _randomParameters = new AddObjectByRandomParametersUserControlViewModel(simulationService, dialogService);
+        SystemStatistics = new SystemStatisticsUserControlViewModel(asyncService, simulationService, loggerFactory);
     }
 
+    public SystemStatisticsUserControlViewModel SystemStatistics { get; }
+
     public RelayCommand CancelCommand =>
-        _cancelCommand ??= new RelayCommand(() =>
-        {
-            IsVisible = false;
-        });
+        _cancelCommand ??= new RelayCommand(() => { IsVisible = false; });
 
     public AsyncRelayCommand ApplyCommand =>
         _applyCommand ??= new AsyncRelayCommand(async () =>
@@ -63,15 +65,11 @@ public class AddObjectUserControlViewModel : ObservableObject
             if (result.HasErrors)
             {
                 _dialogService.ShowErrorDialog(result.GetErrorsString());
-                return;
             }
         });
 
     public RelayCommand GenerateRandomCommand =>
-        _generateRandomCommand ??= new RelayCommand(() =>
-        {
-
-        });
+        _generateRandomCommand ??= new RelayCommand(() => { });
 
     public string Mass
     {
@@ -90,10 +88,29 @@ public class AddObjectUserControlViewModel : ObservableObject
         get => _velocity;
         set => SetProperty(ref _velocity, value);
     }
+
     public bool IsVisible
     {
         get => _isVisible;
         set => SetProperty(ref _isVisible, value);
+    }
+
+    public AddObjectByRandomParametersUserControlViewModel RandomParameters
+    {
+        get => _randomParameters;
+        set => SetProperty(ref _randomParameters, value);
+    }
+
+    protected override void OnActivated()
+    {
+        base.OnActivated();
+        SystemStatistics.IsActive = true;
+    }
+
+    protected override void OnDeactivated()
+    {
+        SystemStatistics.IsActive = false;
+        base.OnDeactivated();
     }
 
     public double GetMass()
@@ -104,11 +121,5 @@ public class AddObjectUserControlViewModel : ObservableObject
         }
 
         return dMass;
-    }
-
-    public AddObjectByRandomParametersUserControlViewModel RandomParameters
-    {
-        get => _randomParameters;
-        set => SetProperty(ref _randomParameters, value);
     }
 }

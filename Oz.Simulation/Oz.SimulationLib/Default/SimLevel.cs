@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oz.SimulationLib.Contracts;
+using Oz.SimulationLib.Default.Messages;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
@@ -101,15 +102,28 @@ public sealed class SimLevel : ISimLevel
                 $"Unable to add object {simObject} to level. Object with such id already exists");
         }
 
-        _simObjects.TryAdd(simObject.Id, simObject);
+        var success = _simObjects.TryAdd(simObject.Id, simObject);
         if (_initialized && !_destroyed)
         {
             await simObject.TryInitializeAsync().ConfigureAwait(false);
         }
+
+        if (success)
+        {
+            await _context.MessageChannel.SendMessageAsync(new ObjectAddedMessage(simObject, this));
+        }
     }
 
-    public ISimObject? RemoveObject(Guid id) =>
-        _simObjects.TryRemove(id, out var obj) ? obj : null;
+    public async Task<ISimObject?> RemoveObjectAsync(Guid id)
+    {
+        if (_simObjects.TryRemove(id, out var obj))
+        {
+            await _context.MessageChannel.SendMessageAsync(new ObjectRemovedMessage(obj, this)).ConfigureAwait(false);
+            return obj;
+        }
+
+        return null;
+    }
 
     public async Task<ISimObject?> FindAsync(Guid id) =>
         await Task.FromResult(!_simObjects.TryGetValue(id, out var simObject) ? simObject : null);

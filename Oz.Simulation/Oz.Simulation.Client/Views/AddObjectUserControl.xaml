@@ -87,6 +87,13 @@
                 <local:AddObjectByRandomParametersUserControl x:Name="_addObjectByRandomParametersUserControl"
                                                               DataContext="{Binding RandomParameters, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></local:AddObjectByRandomParametersUserControl>
             </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource TextBlockStyle}" Text="System statistics"></TextBlock>
+                </TabItem.Header>
+                <local:SystemStatisticsUserControl
+                    DataContext="{Binding SystemStatistics, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></local:SystemStatisticsUserControl>
+            </TabItem>
         </TabControl>
     </Grid>
 

@@ -6,8 +6,6 @@ namespace Oz.SimulationLib.Default;
 public class Simulator : ISimulator
 {
     private const double NormalFrameLength = 0.016666667;
-    private readonly ILoggerFactory _loggerFactory;
-    private readonly IMessageChannel _messageChannel;
     private readonly ITime _time;
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _isSimulationRunning;
@@ -16,9 +14,9 @@ public class Simulator : ISimulator
     public Simulator(ITime time, IMessageChannel messageChannel, ILoggerFactory loggerFactory)
     {
         _time = time;
-        _loggerFactory = loggerFactory;
-        _messageChannel = messageChannel;
         _time.Initialize();
+        Context = new SimContext(_time, messageChannel, this);
+        World = new SimWorld(Context, Guid.NewGuid(), "World", loggerFactory);
     }
 
     public bool IsPrepared { get; private set; }
@@ -30,8 +28,8 @@ public class Simulator : ISimulator
             case true:
                 throw new InvalidOperationException($"{nameof(PrepareSimulationAsync)} can be called only once");
             case false:
-                Context = new SimContext(_time, _messageChannel, this);
-                World = new SimWorld(Context, Guid.NewGuid(), "World", _loggerFactory);
+
+                World.Reset();
                 _cancellationTokenSource = new CancellationTokenSource();
                 await World.InitializeAsync();
                 IsPrepared = true;
@@ -57,27 +55,30 @@ public class Simulator : ISimulator
 
         async Task RenderFunc()
         {
-            while (!token.IsCancellationRequested)
+            try
             {
-                token.ThrowIfCancellationRequested();
-                if (World is null)
+                while (!token.IsCancellationRequested)
                 {
-                    throw new NullReferenceException(nameof(World));
-                }
+                    if (World is null)
+                    {
+                        throw new NullReferenceException(nameof(World));
+                    }
 
-                if (Context is null)
-                {
-                    throw new NullReferenceException(nameof(Context));
-                }
+                    if (Context is null)
+                    {
+                        throw new NullReferenceException(nameof(Context));
+                    }
 
-                _time.Frame();
-                await World.UpdateAsync().ConfigureAwait(false);
-                
-                if (_time.DeltaTime < NormalFrameLength)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(NormalFrameLength - _time.DeltaTime), token).ConfigureAwait(false);
+                    _time.Frame();
+                    await World.UpdateAsync().ConfigureAwait(false);
+
+                    if (_time.DeltaTime < NormalFrameLength)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(NormalFrameLength - _time.DeltaTime), token)
+                            .ConfigureAwait(false);
+                    }
                 }
-            }
+            } catch(Exception exception) {}
         }
 
         var task = Task.Factory.StartNew(RenderFunc, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -98,16 +99,6 @@ public class Simulator : ISimulator
             return;
         }
 
-        if (World == null)
-        {
-            return;
-        }
-
-        if (Context == null)
-        {
-            return;
-        }
-
         if (_cancellationTokenSource == null)
         {
             return;
@@ -118,7 +109,7 @@ public class Simulator : ISimulator
             return;
         }
 
-        await World.DestroyAsync().ConfigureAwait(false);
+        await World.DestroyAllLevelsAsync().ConfigureAwait(false);
         _cancellationTokenSource.Cancel();
         try
         {
@@ -130,12 +121,10 @@ public class Simulator : ISimulator
 
         _cancellationTokenSource.Dispose();
         _cancellationTokenSource = null;
-        Context = null;
-        World = null;
         _isSimulationRunning = false;
         IsPrepared = false;
     }
 
-    public ISimContext? Context { get; private set; }
-    public ISimWorld? World { get; private set; }
+    public ISimContext Context { get; }
+    public ISimWorld World { get; private set; }
 }
