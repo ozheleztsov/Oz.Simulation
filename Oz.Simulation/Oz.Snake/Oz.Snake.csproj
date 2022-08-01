@@ -6,4 +6,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Oz.Snake.Common\Oz.Snake.Common.csproj" />
+    </ItemGroup>
+
 </Project>

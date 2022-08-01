@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Oz.Snake.Common.Dtos;
 using Oz.Snake.Contracts;
-using Oz.Snake.Dtos;
 using Oz.Snake.Exceptions;
 using Oz.Snake.Services;
 
@@ -16,7 +16,12 @@ public class SnakeHub : Hub<ISnakeClient>
     [HubMethodName(nameof(MoveSnake))]
     public async Task MoveSnake(MoveSnakeRequestDto request)
     {
-        
+        _snakeService.MoveSnake(request.Name, request.Direction);
+        if (_snakeService.Board != null)
+        {
+            var snakeAdapter = new SnakeAdapter();
+            await Clients.All.UpdateBoard(snakeAdapter.From(_snakeService.Board));
+        }   
     }
 
     [HubMethodName(nameof(Join))]
@@ -26,7 +31,12 @@ public class SnakeHub : Hub<ISnakeClient>
         {
             _snakeService.AddSnakeOnFreeCell(name);
             await Clients.Caller.OnJoinStatus(new JoinStatusResponseDto(JoinStatus.Success, string.Empty));
-            await Clients.Caller.UpdateBoard();
+
+            if (_snakeService.Board != null)
+            {
+                var snakeAdapter = new SnakeAdapter();
+                await Clients.Caller.UpdateBoard(snakeAdapter.From(_snakeService.Board));
+            }
         }
         catch (SnakeException exception)
         {

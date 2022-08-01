@@ -1,4 +1,4 @@
-﻿using Oz.Snake.Dtos;
+﻿using Oz.Snake.Common.Dtos;
 
 namespace Oz.Snake.Contracts;
 

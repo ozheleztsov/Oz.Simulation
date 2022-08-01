@@ -1,4 +1,4 @@
-﻿using Oz.Snake.Dtos;
+﻿using Oz.Snake.Common.Dtos;
 
 namespace Oz.Snake.Models;
 
@@ -23,17 +23,26 @@ public sealed class Snake
     /// </summary>
     public List<Position> Positions { get; } = new();
 
-    public Snake(SnakeBoard board, string name, int x, int y)
+    public Snake(SnakeBoard board, string name, Position position)
     {
         _board = board;
         Name = name; 
-        Positions.Add(new Position(x, y));
+        Positions.Add(position);
         LastTimeMoved = DateTime.UtcNow.AddDays(-1);
     }
 
     public void MoveTo(Direction direction)
     {
-        
+        var nextPos = _board.GetPositionInDirection(direction, Positions[0]);
+        if (nextPos == null)
+        {
+            return;
+        }
+
+        var lastPos = Positions.Last();
+        Positions.Insert(0, nextPos);
+        Positions.Remove(lastPos);
+        _board.FreeCell(lastPos.X, lastPos.Y);
     }
     
 }

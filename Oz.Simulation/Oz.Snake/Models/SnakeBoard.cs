@@ -1,13 +1,10 @@
-﻿using Oz.Snake.Dtos;
+﻿using Oz.Snake.Common.Dtos;
 using Oz.Snake.Exceptions;
 
 namespace Oz.Snake.Models;
 
 public class SnakeBoard
 {
-    public int Width { get; }
-    public int Height { get; }
-    
     private readonly SnakeCell[,] _board;
 
     public SnakeBoard(int width, int height)
@@ -25,27 +22,30 @@ public class SnakeBoard
         }
     }
 
+    public int Width { get; }
+    public int Height { get; }
+
     public List<Snake> Snakes { get; } = new();
 
-    public void AddSnake(string name, int x, int y)
+    public void AddSnake(string name, Position position)
     {
-        var cell = GetCell(x, y);
+        var cell = GetCell(position);
         if (cell.State != CellState.Empty)
         {
-            throw new SnakeException($"Cell {x}, {y} is not empty");
+            throw new SnakeException($"Cell {position.X}, {position.Y} is not empty");
         }
 
         cell.State = CellState.Snake;
-        var snake = new Snake(this, name, x, y);
+        var snake = new Snake(this, name, position);
         Snakes.Add(snake);
     }
 
     public SnakeCell? GetFreeCell()
     {
         List<SnakeCell> freeCells = new();
-        for (int i = 0; i < Height; i++)
+        for (var i = 0; i < Height; i++)
         {
-            for (int j = 0; j < Width; j++)
+            for (var j = 0; j < Width; j++)
             {
                 if (_board[i, j].State == CellState.Empty)
                 {
@@ -57,17 +57,47 @@ public class SnakeBoard
         return !freeCells.Any() ? null : freeCells[Random.Shared.Next(0, freeCells.Count)];
     }
 
-    private SnakeCell GetCell(int x, int y) =>
-        _board[y, x];
+    private SnakeCell GetCell(Position position) =>
+        _board[position.Y, position.X];
 
     public bool IsNameExists(string name) => Snakes.Select(x => x.Name).Contains(name);
 
-    public Position GetPositionInDirection(Direction direction, Position position)
+    public bool IsAllowedPosition(int x, int y) =>
+        x >= 0 && x < Width && y >= 0 && y < Height;
+
+    public void FreeCell(int x, int y) =>
+        _board[y, x].State = CellState.Empty;
+
+    public Position? GetPositionInDirection(Direction direction, Position position)
     {
+        int x = position.X, y = position.Y;
         switch (direction)
         {
-            
+            case Direction.Down:
+            {
+                y++;
+            }
+                break;
+            case Direction.Up:
+            {
+                y--;
+            }
+                break;
+            case Direction.Left:
+            {
+                x--;
+            }
+                break;
+            case Direction.Right:
+            {
+                x++;
+            }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
         }
+
+        return !IsAllowedPosition(x, y) ? null : new Position(x, y);
     }
 }
 

@@ -1,4 +1,4 @@
-﻿namespace Oz.Snake.Dtos;
+﻿namespace Oz.Snake.Common.Dtos;
 
 public sealed class SnakeBoardDto
 {
