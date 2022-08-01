@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oz.Simulation.Client", "Oz.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oz.Simulation.ClientLib", "Oz.Simulation.ClientLib\Oz.Simulation.ClientLib.csproj", "{D6B04378-3059-4C11-B11A-6AF7A249F67D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oz.Snake", "Oz.Snake\Oz.Snake.csproj", "{15951ACB-040B-4C71-B002-703DEB0EDC7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{D6B04378-3059-4C11-B11A-6AF7A249F67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6B04378-3059-4C11-B11A-6AF7A249F67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6B04378-3059-4C11-B11A-6AF7A249F67D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15951ACB-040B-4C71-B002-703DEB0EDC7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15951ACB-040B-4C71-B002-703DEB0EDC7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15951ACB-040B-4C71-B002-703DEB0EDC7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15951ACB-040B-4C71-B002-703DEB0EDC7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FE729D0A-F5E9-401C-ACDC-342C00864F65} = {D82DDB9D-56BE-46DD-A220-4A1E7078D1D2}
