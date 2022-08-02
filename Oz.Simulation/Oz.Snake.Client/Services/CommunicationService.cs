@@ -6,13 +6,16 @@ using Oz.Snake.Common.Dtos;
 
 namespace Oz.Snake.Client.Services;
 
-public class SnakeService : ISnakeService
+public class CommunicationService : ICommunicationService
 {
+    private readonly IOutputService _outputService;
     private readonly IOptions<SnakeSettings> _snakeSettings;
     private readonly HubConnection _connection;
 
-    public SnakeService(IOptions<SnakeSettings> snakeSettings)
+    public CommunicationService(ISnakeBoardService snakeBoardService, IOutputService outputService, IOptions<SnakeSettings> snakeSettings)
     {
+        var snakeBoardService1 = snakeBoardService;
+        _outputService = outputService;
         _snakeSettings = snakeSettings;
         _connection = new HubConnectionBuilder()
             .WithUrl("http://localhost:5205/snake")
@@ -23,19 +26,20 @@ public class SnakeService : ISnakeService
         _connection.Reconnecting += OnReconnecting;
         _connection.On<SnakeBoardDto>("UpdateBoard", snakeBoard =>
         {
-            Console.WriteLine(snakeBoard.ToString());
+            snakeBoardService1.UpdateBoard(snakeBoard);
+            _outputService.DrawSnakeBoard(snakeBoardService1.Board);
         });
     }
 
     private Task OnReconnecting(Exception? arg)
     {
-        Console.WriteLine(arg != null ? $"OnReconnecting: {arg.Message}" : "OnReconnecting: exception is null");
+        _outputService.DrawMessage(arg != null ? $"OnReconnecting: {arg.Message}" : "OnReconnecting: exception is null");
         return Task.CompletedTask;
     }
 
     private Task OnReconnected(string? arg)
     {
-        Console.WriteLine($"OnReconnected: {arg}");
+        _outputService.DrawMessage($"OnReconnected: {arg}");
         return Task.CompletedTask;
     }
 
@@ -43,8 +47,8 @@ public class SnakeService : ISnakeService
     {
         if (exception != null)
         {
-            Console.WriteLine(exception.Message);
-            Console.WriteLine(exception.StackTrace);
+            _outputService.DrawMessage(exception.Message);
+            _outputService.DrawMessage(exception.StackTrace ?? string.Empty);
         }
 
         await Task.Delay(Random.Shared.Next(0, 5000));
@@ -78,8 +82,8 @@ public class SnakeService : ISnakeService
         }
         catch (Exception exception)
         {
-            Console.WriteLine(exception.Message);
-            Console.WriteLine(exception.StackTrace);
+            _outputService.DrawMessage(exception.Message);
+            _outputService.DrawMessage(exception.StackTrace ?? string.Empty);
         }
     }
     
@@ -94,7 +98,7 @@ public class SnakeService : ISnakeService
         }
         else
         {
-            Console.WriteLine($"{nameof(Move)}: connection in wrong state: {_connection.State}");
+            _outputService.DrawMessage($"{nameof(Move)}: connection in wrong state: {_connection.State}");
         }
     }
 }

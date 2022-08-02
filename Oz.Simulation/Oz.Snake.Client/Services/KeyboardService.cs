@@ -5,11 +5,11 @@ namespace Oz.Snake.Client.Services;
 
 public class KeyboardService : IKeyboardService
 {
-    private readonly ISnakeService _snakeService;
+    private readonly ICommunicationService _communicationService;
     private Task _listeningTask;
 
-    public KeyboardService(ISnakeService snakeService) =>
-        _snakeService = snakeService;
+    public KeyboardService(ICommunicationService communicationService) =>
+        _communicationService = communicationService;
 
     public async Task StartListening(Action escapeAction, CancellationToken cancellationToken)
     {
@@ -21,22 +21,22 @@ public class KeyboardService : IKeyboardService
             {
                 case ConsoleKey.UpArrow:
                 {
-                    await _snakeService.Move(Direction.Up, cancellationToken);
+                    await _communicationService.Move(Direction.Up, cancellationToken);
                 }
                     break;
                 case ConsoleKey.DownArrow:
                 {
-                    await _snakeService.Move(Direction.Down, cancellationToken);
+                    await _communicationService.Move(Direction.Down, cancellationToken);
                 }
                     break;
                 case ConsoleKey.LeftArrow:
                 {
-                    await _snakeService.Move(Direction.Left, cancellationToken);
+                    await _communicationService.Move(Direction.Left, cancellationToken);
                 }
                     break;
                 case ConsoleKey.RightArrow:
                 {
-                    await _snakeService.Move(Direction.Right, cancellationToken);
+                    await _communicationService.Move(Direction.Right, cancellationToken);
                 }
                     break;
                 case ConsoleKey.Escape:

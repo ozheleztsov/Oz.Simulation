@@ -1,4 +1,5 @@
 ﻿using Oz.Snake.Common.Dtos;
+using Oz.Snake.Common.Models;
 using Oz.Snake.Exceptions;
 
 namespace Oz.Snake.Models;
@@ -21,6 +22,8 @@ public class SnakeBoard
             }
         }
     }
+
+    public SnakeCell this[int i, int j] => _board[i, j];
 
     public int Width { get; }
     public int Height { get; }
@@ -101,19 +104,3 @@ public class SnakeBoard
     }
 }
 
-public class SnakeCell
-{
-    public SnakeCell(int x, int y) =>
-        Position = new Position(x, y);
-
-    public Position Position { get; }
-
-    public CellState State { get; set; } = CellState.Empty;
-}
-
-public enum CellState
-{
-    Empty,
-    Food,
-    Snake
-}
