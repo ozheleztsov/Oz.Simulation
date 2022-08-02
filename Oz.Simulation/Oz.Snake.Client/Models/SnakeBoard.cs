@@ -17,7 +17,7 @@ public class SnakeBoard
         {
             for (var j = 0; j < snakeBoardDto.Width; j++)
             {
-                _board[i, j] = new SnakeCell(snakeBoardDto.Board[i, j]);
+                _board[i, j] = new SnakeCell(snakeBoardDto.Board[i * snakeBoardDto.Width + j]);
             }
         }
 

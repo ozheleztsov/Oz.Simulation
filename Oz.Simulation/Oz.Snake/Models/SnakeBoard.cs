@@ -71,6 +71,9 @@ public class SnakeBoard
     public void FreeCell(int x, int y) =>
         _board[y, x].State = CellState.Empty;
 
+    public void SetState(CellState state, int x, int y) =>
+        _board[y, x].State = state;
+
     public Position? GetPositionInDirection(Direction direction, Position position)
     {
         int x = position.X, y = position.Y;

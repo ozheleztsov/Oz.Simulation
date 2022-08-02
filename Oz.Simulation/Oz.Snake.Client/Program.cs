@@ -18,6 +18,7 @@ using var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ICommunicationService, CommunicationService>();
         services.AddSingleton<IKeyboardService, KeyboardService>();
         services.AddSingleton<ISnakeBoardService, SnakeBoardService>();
+        services.AddSingleton<IOutputService, ConsoleOutputService>();
 
     })
     .Build();

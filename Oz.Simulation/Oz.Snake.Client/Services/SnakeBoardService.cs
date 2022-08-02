@@ -6,7 +6,7 @@ namespace Oz.Snake.Client.Services;
 
 public class SnakeBoardService : ISnakeBoardService
 {
-    public SnakeBoard Board { get; private set; }
+    public SnakeBoard? Board { get; private set; }
 
     public void UpdateBoard(SnakeBoardDto snakeBoardDto) =>
         Board = new SnakeBoard(snakeBoardDto);

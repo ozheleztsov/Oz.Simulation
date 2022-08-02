@@ -9,7 +9,7 @@ public sealed class SnakeBoardDto
     public int Height { get; set; }
     public List<SnakeDto> Snakes { get; set; } = new();
     
-    public SnakeCell[,] Board { get; set; }
+    public SnakeCellDto[] Board { get; set; }
 
     public override string ToString()
     {

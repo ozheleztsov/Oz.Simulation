@@ -1,5 +1,4 @@
 ﻿using Oz.Snake.Common.Dtos;
-using Oz.Snake.Common.Models;
 using Oz.Snake.Models;
 
 namespace Oz.Snake.Services;
@@ -17,13 +16,18 @@ public class SnakeAdapter
                 Name = x.Name,
                 Positions = x.Positions.Select(x => x).ToList()
             }).ToList(),
-            Board = new SnakeCell[snakeBoard.Height, snakeBoard.Width]
+            Board = new SnakeCellDto[snakeBoard.Height * snakeBoard.Width]
         };
         for (var i = 0; i < snakeBoard.Height; i++)
         {
             for (var j = 0; j < snakeBoard.Width; j++)
             {
-                result.Board[i, j] = new SnakeCell(snakeBoard[i, j]);
+                var originalCell = snakeBoard[i, j];
+                result.Board[i * snakeBoard.Width + j] = new SnakeCellDto()
+                {
+                    Position = new Position(originalCell.Position.X, originalCell.Position.Y),
+                    State = originalCell.State
+                };
             }
         }
 

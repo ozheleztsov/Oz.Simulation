@@ -13,6 +13,12 @@ public class SnakeCell
         State = other.State;
     }
 
+    public SnakeCell(SnakeCellDto snakeCellDto)
+    {
+        Position = new Position(snakeCellDto.Position.X, snakeCellDto.Position.Y);
+        State = snakeCellDto.State;
+    }
+
     public Position Position { get; }
 
     public CellState State { get; set; } = CellState.Empty;

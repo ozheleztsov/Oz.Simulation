@@ -14,7 +14,6 @@ public class CommunicationService : ICommunicationService
 
     public CommunicationService(ISnakeBoardService snakeBoardService, IOutputService outputService, IOptions<SnakeSettings> snakeSettings)
     {
-        var snakeBoardService1 = snakeBoardService;
         _outputService = outputService;
         _snakeSettings = snakeSettings;
         _connection = new HubConnectionBuilder()
@@ -26,8 +25,11 @@ public class CommunicationService : ICommunicationService
         _connection.Reconnecting += OnReconnecting;
         _connection.On<SnakeBoardDto>("UpdateBoard", snakeBoard =>
         {
-            snakeBoardService1.UpdateBoard(snakeBoard);
-            _outputService.DrawSnakeBoard(snakeBoardService1.Board);
+            snakeBoardService.UpdateBoard(snakeBoard);
+            if (snakeBoardService.Board is not null)
+            {
+                _outputService.DrawSnakeBoard(snakeBoardService.Board);
+            }
         });
     }
 

@@ -1,4 +1,5 @@
 ﻿using Oz.Snake.Common.Dtos;
+using Oz.Snake.Common.Models;
 
 namespace Oz.Snake.Models;
 
@@ -43,6 +44,11 @@ public sealed class Snake
         Positions.Insert(0, nextPos);
         Positions.Remove(lastPos);
         _board.FreeCell(lastPos.X, lastPos.Y);
+
+        foreach (var snakePosition in Positions)
+        {
+            _board.SetState(CellState.Snake, snakePosition.X, snakePosition.Y);
+        }
     }
     
 }

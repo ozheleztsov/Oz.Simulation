@@ -7,5 +7,5 @@ public interface ISnakeBoardService
 {
     void UpdateBoard(SnakeBoardDto snakeBoardDto);
     
-    SnakeBoard Board { get; }
+    SnakeBoard? Board { get; }
 }
