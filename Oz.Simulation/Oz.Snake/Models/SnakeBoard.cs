@@ -1,10 +1,11 @@
 ﻿using Oz.Snake.Common.Dtos;
 using Oz.Snake.Common.Models;
 using Oz.Snake.Exceptions;
+using System.Collections;
 
 namespace Oz.Snake.Models;
 
-public class SnakeBoard
+public class SnakeBoard : IEnumerable<SnakeCell>
 {
     private readonly SnakeCell[,] _board;
 
@@ -29,6 +30,20 @@ public class SnakeBoard
     public int Height { get; }
 
     public List<Snake> Snakes { get; } = new();
+
+    public IEnumerator<SnakeCell> GetEnumerator()
+    {
+        for (var i = 0; i < Height; i++)
+        {
+            for (var j = 0; j < Width; j++)
+            {
+                yield return _board[i, j];
+            }
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
 
     public void AddSnake(string name, Position position)
     {
@@ -74,6 +89,18 @@ public class SnakeBoard
     public void SetState(CellState state, int x, int y) =>
         _board[y, x].State = state;
 
+    public bool SetStateIfPredicate(CellState state, int x, int y, Func<SnakeCell, bool> predicate)
+    {
+        if (!predicate(_board[y, x]))
+        {
+            return false;
+        }
+
+        _board[y, x].State = state;
+        return true;
+
+    }
+
     public Position? GetPositionInDirection(Direction direction, Position position)
     {
         int x = position.X, y = position.Y;
@@ -106,4 +133,3 @@ public class SnakeBoard
         return !IsAllowedPosition(x, y) ? null : new Position(x, y);
     }
 }
-

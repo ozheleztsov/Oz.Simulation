@@ -29,6 +29,7 @@ public class CommunicationService : ICommunicationService
             if (snakeBoardService.Board is not null)
             {
                 _outputService.DrawSnakeBoard(snakeBoardService.Board);
+                _outputService.DrawMessage("Received board");
             }
         });
     }

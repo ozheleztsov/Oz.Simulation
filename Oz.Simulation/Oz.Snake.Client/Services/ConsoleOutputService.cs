@@ -7,30 +7,79 @@ namespace Oz.Snake.Client.Services;
 
 public class ConsoleOutputService : IOutputService
 {
+    private const int XOffset = 1;
+    private const int YOffset = 1;
+    private const int MaxMessagesCount = 10;
 
-    public ConsoleOutputService()
-    {
+    public ConsoleOutputService() =>
         Console.OutputEncoding = Encoding.UTF8;
-    }
 
     public void DrawMessage(string message)
     {
-        
+        AddMessage(message);
+        RedrawAll();
     }
 
-    private const int XOffset = 1;
-    private const int YOffset = 1;
-    
+    private void AddMessage(string message)
+    {
+        if (_messages.Count > MaxMessagesCount)
+        {
+            while (_messages.Count > MaxMessagesCount - 1)
+            {
+                _messages.RemoveAt(0);
+            }
+        }
+        _messages.Add(message);
+    }
+
+    private readonly List<string> _messages = new();
+    private SnakeBoard? _cachedSnakeBoard = null;
+
     public void DrawSnakeBoard(SnakeBoard snakeBoard)
+    {
+        _cachedSnakeBoard = snakeBoard;
+        RedrawAll();
+    }
+
+    private void RedrawAll()
     {
         Console.Clear();
         Console.CursorVisible = false;
-        for (int i = 0; i < snakeBoard.Height; i++)
+        RedrawSnakeBoard();
+        RedrawMessages();
+        Console.CursorVisible = true;
+    }
+
+    private void RedrawMessages()
+    {
+        Console.SetCursorPosition(XOffset, YOffset + (_cachedSnakeBoard?.Height ?? 0) + 1);
+        int index = _messages.Count - 1;
+        while (Console.CursorTop < Console.WindowHeight)
         {
-            for (int j = 0; j < snakeBoard.Width; j++)
+            if (index < 0)
+            {
+                break;
+            }
+
+            string message = _messages[index];
+            index--;
+            Console.WriteLine(message);
+            Console.CursorLeft = XOffset;
+        }
+    }
+
+    private void RedrawSnakeBoard()
+    {
+        if (_cachedSnakeBoard is null)
+        {
+            return;
+        }
+        for (var i = 0; i < _cachedSnakeBoard.Height; i++)
+        {
+            for (var j = 0; j < _cachedSnakeBoard.Width; j++)
             {
                 Console.SetCursorPosition(XOffset + j, YOffset + i);
-                var cell = snakeBoard[i, j];
+                var cell = _cachedSnakeBoard[i, j];
                 switch (cell.State)
                 {
                     case CellState.Empty:
@@ -46,13 +95,10 @@ public class ConsoleOutputService : IOutputService
                     case CellState.Snake:
                     {
                         Console.Write('#');
-                        Console.SetCursorPosition(0, YOffset + snakeBoard.Height + 1);
-                        Console.Write($"{cell.Position.X}, {cell.Position.Y}");
                     }
                         break;
                 }
             }
         }
-        Console.CursorVisible = true;
     }
 }
