@@ -46,8 +46,26 @@ public class ConsoleOutputService : IOutputService
         Console.Clear();
         Console.CursorVisible = false;
         RedrawSnakeBoard();
+        RedrawStatisticsInformation();
         RedrawMessages();
         Console.CursorVisible = true;
+    }
+
+    private void RedrawStatisticsInformation()
+    {
+        if (_cachedSnakeBoard is null)
+        {
+            return;
+        }
+
+        var verticalOffset = 0;
+        Console.SetCursorPosition(XOffset + _cachedSnakeBoard.Width + 2, YOffset);
+        foreach (var snake in _cachedSnakeBoard.Snakes)
+        {
+            Console.Write($"Snake: {snake.Name} last time moved: {snake.LastTimeMoved}");
+            verticalOffset++;
+            Console.SetCursorPosition(XOffset + _cachedSnakeBoard.Width + 2, YOffset + verticalOffset);
+        }
     }
 
     private void RedrawMessages()

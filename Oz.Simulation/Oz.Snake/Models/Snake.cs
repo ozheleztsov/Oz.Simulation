@@ -40,15 +40,25 @@ public sealed class Snake
             return;
         }
 
-        var lastPos = Positions.Last();
-        Positions.Insert(0, nextPos);
-        Positions.Remove(lastPos);
-        _board.FreeCell(lastPos.X, lastPos.Y);
+        var nextCell = _board[nextPos.Y, nextPos.X];
+        if (nextCell.State == CellState.Food)
+        {
+            Positions.Insert(0, nextPos);
+            _board.SetStateIfPredicate(CellState.Snake, nextPos.X, nextPos.Y, c => c.State == CellState.Food);
+        }
+        else
+        {
+            var lastPos = Positions.Last();
+            Positions.Insert(0, nextPos);
+            Positions.Remove(lastPos);
+            _board.FreeCell(lastPos.X, lastPos.Y);
+        }
 
         foreach (var snakePosition in Positions)
         {
             _board.SetState(CellState.Snake, snakePosition.X, snakePosition.Y);
         }
+        LastTimeMoved = DateTime.UtcNow;
     }
     
 }

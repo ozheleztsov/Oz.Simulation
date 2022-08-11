@@ -14,7 +14,8 @@ public class SnakeAdapter
             Snakes = snakeBoard.Snakes.Select(x => new SnakeDto
             {
                 Name = x.Name,
-                Positions = x.Positions.Select(x => x).ToList()
+                Positions = x.Positions.Select(position => position).ToList(),
+                LastTimeMoved = x.LastTimeMoved
             }).ToList(),
             Board = new SnakeCellDto[snakeBoard.Height * snakeBoard.Width]
         };
