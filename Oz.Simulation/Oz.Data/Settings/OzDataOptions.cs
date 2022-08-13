@@ -4,6 +4,6 @@ namespace Oz.Data.Settings;
 
 public class OzDataOptions
 {
-    public string? StorageAccountConnectionString { get; set; }
-    public string? BlogTableName { get; set; }
+    public string StorageAccountConnectionString { get; set; }
+    public string BlogTableName { get; set; }
 }
