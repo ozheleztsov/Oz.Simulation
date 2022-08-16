@@ -1,0 +1,41 @@
+﻿@page "/posts"
+@using System.Globalization
+@model Oz.Blog.Pages.GetBlogPostsModel
+
+@{
+    ViewData["Title"] = "Posts";
+}
+
+<h1>Posts</h1>
+<hr/>
+
+@foreach (var entry in Model.Posts)
+{
+    <div class="row" style="margin-bottom: 20px">
+        <div class="col-10">
+            <div class="row">Created on @entry.CreateDate.ToString(CultureInfo.InvariantCulture), modified on @entry.ModifiedDate.ToString(CultureInfo.InvariantCulture)</div>
+            <div class="row">@entry.Title</div>
+            <div class="row">@entry.Content</div>
+            <div class="row">@entry.AuthorSign</div>
+            <div class="row">
+                @if (entry.Annotations.Any())
+                {
+                    <p class="p-3">Annotations:</p>
+                }
+                @foreach (var annotation in entry.Annotations)
+                {
+                    <div class="row">
+                        <p>@annotation.Content</p>
+                        <p>@annotation.CreateDate.ToString(CultureInfo.InvariantCulture)</p>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-2">
+            <a asp-page="EditBlogPost" asp-route-id="@(entry.Id)" class="btn btn-outline-secondary">Edit</a>
+        </div>
+        <hr/>
+    </div>
+}
+
+

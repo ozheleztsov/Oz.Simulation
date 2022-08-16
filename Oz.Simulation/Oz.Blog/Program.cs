@@ -1,3 +1,5 @@
+using Oz.Data;
+using Oz.Data.Contracts;
 using Oz.Data.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +8,7 @@ builder.Services.Configure<OzDataOptions>(builder.Configuration.GetSection("OzDa
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddScoped<IBlogDataService, OzBlogDataService>();
 
 var app = builder.Build();
 
