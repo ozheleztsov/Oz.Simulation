@@ -1,0 +1,55 @@
+﻿@page "/annotations/{id}"
+
+@using System.Globalization
+@model Oz.Blog.Pages.AddRemoveAnnotationModel
+
+@{
+    ViewData["Title"] = "Edit annotations";
+}
+
+@if (Model.AdminService.IsAdmin)
+{
+@if (Model.BlogEntry != null)
+{
+    <div class="col-md-4 margin-top-8">
+        @foreach (var annotation in Model.BlogEntry.Annotations)
+        {
+            <div class="row">
+                <div>@Html.Raw(annotation.Content.Replace("\r\n", "<br />"))</div>
+                <div>@annotation.CreateDate.ToString(CultureInfo.InvariantCulture)</div>
+                <div>
+                    <form asp-page-handler="Delete" method="post">
+                        <input type="hidden" name="annotationId" value="@annotation.Id"/>
+                        <input type="hidden" name="blogId" value="@Model.BlogEntry.Id"/>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            Remove
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+    <div class="col-md-4 margin-top-8">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input asp-for="AnnotationViewModel.BlogPostId" type="hidden"/>
+
+            <div class="form-group">
+                <label asp-for="AnnotationViewModel.Content" class="control-label"></label>
+                <textarea asp-for="AnnotationViewModel.Content" class="form-control"></textarea>
+                <span asp-validation-for="AnnotationViewModel.Content" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Add annotation" class="btn btn-primary blogbtn"/>
+            </div>
+        </form>
+
+    </div>
+}
+else
+{
+    <div>You don't have access to this page</div>
+}

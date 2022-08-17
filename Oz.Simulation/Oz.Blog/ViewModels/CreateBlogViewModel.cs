@@ -1,4 +1,4 @@
-﻿using Oz.Data.Entities;
+﻿using Oz.Blog.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace Oz.Blog.ViewModels;

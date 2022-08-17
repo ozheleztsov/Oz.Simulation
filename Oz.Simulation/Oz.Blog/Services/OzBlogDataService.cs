@@ -1,12 +1,12 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
+using Oz.Blog.Entities;
+using Oz.Blog.Settings;
 using Oz.Data.Contracts;
-using Oz.Data.Entities;
-using Oz.Data.Settings;
 using System.Linq.Expressions;
 
-namespace Oz.Data;
+namespace Oz.Blog.Services;
 
 public class OzBlogDataService : IBlogDataService
 {

@@ -1,37 +1,45 @@
 ﻿@page "/create-post"
 @model Oz.Blog.Pages.CreateBlogPostModel
+
 @{
     ViewData["Title"] = "Create blog post";
 }
 
-<h1>Create blog post</h1>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
-            <div class="form-group">
-                <label asp-for="CreateBlogViewModel.Title" class="control-label"></label>
-                <input asp-for="CreateBlogViewModel.Title" class="form-control" />
-                <span asp-validation-for="CreateBlogViewModel.Title" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="CreateBlogViewModel.Content" class="control-label"></label>
-                <textarea asp-for="CreateBlogViewModel.Content" class="form-control"></textarea>
-                <span asp-validation-for="CreateBlogViewModel.Content" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="CreateBlogViewModel.AuthorSign" class="control-label"></label>
-                <input asp-for="CreateBlogViewModel.AuthorSign" class="form-control"/>
-                <span asp-validation-for="CreateBlogViewModel.AuthorSign" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <input type="submit" value="Create post" class="btn btn-primary"/>
-            </div>
-        </form>
+@if (Model.AdminService.IsAdmin)
+{
+    <h1>Create blog post</h1>
+    <hr/>
+    <div class="row">
+        <div class="col-md-4">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="CreateBlogViewModel.Title" class="control-label"></label>
+                    <input asp-for="CreateBlogViewModel.Title" class="form-control"/>
+                    <span asp-validation-for="CreateBlogViewModel.Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CreateBlogViewModel.Content" class="control-label"></label>
+                    <textarea asp-for="CreateBlogViewModel.Content" class="form-control"></textarea>
+                    <span asp-validation-for="CreateBlogViewModel.Content" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CreateBlogViewModel.AuthorSign" class="control-label"></label>
+                    <input asp-for="CreateBlogViewModel.AuthorSign" class="form-control"/>
+                    <span asp-validation-for="CreateBlogViewModel.AuthorSign" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Create post" class="btn btn-primary"/>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div>You don't have access to this page</div>
+}

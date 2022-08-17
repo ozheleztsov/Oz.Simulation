@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Oz.Blog.Contracts;
+using Oz.Blog.Entities;
 using Oz.Blog.ViewModels;
 using Oz.Data.Contracts;
-using Oz.Data.Entities;
 using System.Text.Json;
 
 namespace Oz.Blog.Pages;
@@ -12,11 +13,14 @@ public class CreateBlogPostModel : PageModel
     private readonly IBlogDataService _blogDataService;
     private readonly ILogger<CreateBlogPostModel> _logger;
 
-    public CreateBlogPostModel(IBlogDataService blogDataService, ILogger<CreateBlogPostModel> logger)
+    public CreateBlogPostModel(IBlogDataService blogDataService, IAdminService adminService, ILogger<CreateBlogPostModel> logger)
     {
         _blogDataService = blogDataService;
+        AdminService = adminService;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+    
+    public IAdminService AdminService { get; private set; }
 
     [BindProperty]
     public CreateBlogViewModel CreateBlogViewModel { get; set; } = new();

@@ -1,28 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Options;
-using Oz.Data.Settings;
+using Oz.Blog.Contracts;
+using Oz.Blog.Entities;
+using Oz.Data.Contracts;
+using System.Collections.Immutable;
 
 namespace Oz.Blog.Pages;
 
 public class IndexModel : PageModel
 {
+    public IAdminService AdminService { get; }
+    private readonly IBlogDataService _blogDataService;
     private readonly ILogger<IndexModel> _logger;
-    private readonly IOptions<OzDataOptions> _options;
 
-    public IndexModel(IOptions<OzDataOptions> options, ILogger<IndexModel> logger)
+    public IndexModel(IBlogDataService blogDataService, IAdminService adminService, ILogger<IndexModel> logger)
     {
-        _options = options;
+        AdminService = adminService;
+        _blogDataService = blogDataService;
         _logger = logger;
     }
+    public ImmutableList<BlogEntryResponseData> Posts { get; private set; } = ImmutableList<BlogEntryResponseData>.Empty;
 
-    public string StorageAccountConnectionString { get; set; } = string.Empty;
-    public string BlogTableName { get; set; } = string.Empty;
-
-    public async Task OnGetAsync()
+    public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
-        StorageAccountConnectionString = _options.Value.StorageAccountConnectionString ?? string.Empty;
-        BlogTableName = _options.Value.BlogTableName ?? string.Empty;
-        await Task.CompletedTask;
+        Posts = (await _blogDataService.GetBlogEntriesAsync(entry => true, cancellationToken))
+            .OrderByDescending(x => x.ModifiedDate)
+            .ToImmutableList();
+        
+        _logger.LogInformation("{Number} of posts received", Posts.Count);
+        return Page();
     }
 }

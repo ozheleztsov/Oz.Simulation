@@ -7,7 +7,7 @@ using System.Text.Json;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
-namespace Oz.Data.Entities;
+namespace Oz.Blog.Entities;
 
 public class BlogEntry : ITableEntity
 {

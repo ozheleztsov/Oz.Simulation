@@ -1,6 +1,6 @@
 ﻿// ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Oz.Data.Settings;
+namespace Oz.Blog.Settings;
 
 public class OzDataOptions
 {

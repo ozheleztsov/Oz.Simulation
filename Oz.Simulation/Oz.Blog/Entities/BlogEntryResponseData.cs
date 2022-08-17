@@ -1,6 +1,6 @@
 ﻿// ReSharper disable NotAccessedPositionalProperty.Global
 
-namespace Oz.Data.Entities;
+namespace Oz.Blog.Entities;
 
 public sealed record BlogEntryResponseData(
     Guid Id, string Title, string Content, DateTime CreateDate, DateTime ModifiedDate,

@@ -1,5 +1,5 @@
 ﻿// ReSharper disable ClassNeverInstantiated.Global
 
-namespace Oz.Data.Entities;
+namespace Oz.Blog.Entities;
 
 public sealed record BlogEntryUpdateData(string Title, string Content, string AuthorSign, List<BlogEntryAnnotation> Annotations);
