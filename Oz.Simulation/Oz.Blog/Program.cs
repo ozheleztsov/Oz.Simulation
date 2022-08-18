@@ -14,6 +14,8 @@ builder.Services.AddScoped<IBlogDataService, OzBlogDataService>();
 
 builder.Services.AddScoped<AuthMiddleware>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<ICookieService, CookieService>();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

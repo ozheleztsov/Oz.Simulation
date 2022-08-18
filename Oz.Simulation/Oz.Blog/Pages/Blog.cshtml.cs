@@ -26,4 +26,10 @@ public class BlogModel : PageModel
         Blog = await _dataService.GetBlogEntryByIdAsync(id, cancellationToken);
         return Page();
     }
+
+    public async Task<IActionResult> OnPostDeleteAsync(Guid blogPostId, CancellationToken cancellationToken)
+    {
+        await _dataService.DeleteBlogEntryAsync(blogPostId, cancellationToken);
+        return RedirectToPage("Index");
+    }
 }

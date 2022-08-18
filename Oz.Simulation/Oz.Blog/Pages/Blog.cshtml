@@ -1,6 +1,6 @@
 ﻿@page "{id}"
 @using System.Globalization
-@model Oz.Blog.Pages.BlogModel
+@model BlogModel
 
 @{
     ViewData["Title"] = "Post";
@@ -12,7 +12,7 @@
 }
 else
 {
-    <div class="text-center">
+    <div class="row">
         <div class="row h1">@Model.Blog.Title</div>
         <div class="row margin-bottom-20">
             <div class="row">Created on @Model.Blog.CreateDate.ToString(CultureInfo.InvariantCulture), modified on @Model.Blog.ModifiedDate.ToString(CultureInfo.InvariantCulture)</div>
@@ -25,15 +25,45 @@ else
                 }
                 @foreach (var annotation in Model.Blog.Annotations)
                 {
-                    <div class="row annotation-one">
+                    <div class="row">
                         <div>
                             @Html.Raw(annotation.Content.Replace("\r\n", "<br />"))
                         </div>
-                        <br />
+                        <br/>
                         <div class="text-sm-start">@annotation.CreateDate.ToString(CultureInfo.InvariantCulture)</div>
                     </div>
                 }
             </div>
+        </div>
+        <div class="row">
+
+            @if (Model.AdminService.IsAdmin)
+            {
+                <div class="col-sm-2">
+                    <a class="btn btn-outline-secondary"
+                       asp-page="EditBlogPost"
+                       asp-route-id="@Model.Blog.Id">
+                        Edit post
+                    </a>
+                </div>
+
+                <div class="col-sm-2">
+                    <a asp-page="AddRemoveAnnotation" asp-route-id="@(Model.Blog.Id)"
+                       class="btn btn-outline-secondary">
+                        Edit annotations
+                    </a>
+                </div>
+
+
+                <div class="col-sm-2">
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="blogPostId" value="@(Model.Blog.Id)"
+                               style="min-width: 50px"/>
+                        <input type="submit" class="btn btn-outline-secondary text-danger" value="Delete"
+                               style="min-width: 50px"/>
+                    </form>
+                </div>
+            }
         </div>
     </div>
 }

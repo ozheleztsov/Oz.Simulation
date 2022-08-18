@@ -8,6 +8,12 @@
 
 <div class="text-center">
     <h1>Posts</h1>
+    @if (Model.AdminService.IsAdmin)
+    {
+        <div>
+            <a asp-page="CreateBlogPost" class="link-primary">Create post</a>
+        </div>
+    }
     <hr/>
     
     @foreach (var entry in Model.Posts)
@@ -16,30 +22,35 @@
             <div class="col-10">
                 <div class="row">Created on @entry.CreateDate.ToString(CultureInfo.InvariantCulture), modified on @entry.ModifiedDate.ToString(CultureInfo.InvariantCulture)</div>
                 <div class="row">@entry.Title</div>
-                <div class="row">@Html.Raw(entry.Content.Replace("\r\n", "<br />"))</div>
+                @* <div class="row text-start">@Html.Raw(entry.Content.Replace("\r\n", "<br />"))</div> *@
                 <div class="row">@entry.AuthorSign</div>
-                <div class="row">
-                    @if (entry.Annotations.Any())
-                    {
-                        <div class="row" style="margin-top: 10px">Annotations:</div>
-                    }
-                    @foreach (var annotation in entry.Annotations)
-                    {
-                        <div class="row" style="margin-top: 4px; font-size: small">
-                            <div class="text-sm-start">
-                                @Html.Raw(annotation.Content.Replace("\r\n", "<br />"))
-                            </div>
-                            <br />
-                            <div class="text-sm-start">@annotation.CreateDate.ToString(CultureInfo.InvariantCulture)</div>
-                        </div>
-                    }
-                </div>
+                @* <div class="row"> *@
+                @*     @if (entry.Annotations.Any()) *@
+                @*     { *@
+                @*         <div class="row" style="margin-top: 10px">Annotations:</div> *@
+                @*     } *@
+                @*     @foreach (var annotation in entry.Annotations) *@
+                @*     { *@
+                @*         <div class="row" style="margin-top: 4px; font-size: small"> *@
+                @*             <div class="text-sm-start"> *@
+                @*                 @Html.Raw(annotation.Content.Replace("\r\n", "<br />")) *@
+                @*             </div> *@
+                @*             <br /> *@
+                @*             <div class="text-sm-start">@annotation.CreateDate.ToString(CultureInfo.InvariantCulture)</div> *@
+                @*         </div> *@
+                @*     } *@
+                @* </div> *@
             </div>
             <div class="col-2">
                 @if (Model.AdminService.IsAdmin)
                 {
-                    <a asp-page="AddRemoveAnnotation" asp-route-id="@(entry.Id)" class="btn btn-outline-secondary">Edit annotations</a>
+                    <div class="row">
+                        <a asp-page="AddRemoveAnnotation" asp-route-id="@(entry.Id)" class="btn btn-outline-secondary">Edit annotations</a>
+                        </div>
                 }
+                <div class="row">
+                    <a class="btn btn-outline-secondary" asp-page="Blog" asp-route-id="@(entry.Id)">Post details</a>
+                </div>
             </div>
             <hr/>
         </div>

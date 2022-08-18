@@ -1,5 +1,5 @@
 ﻿@page "/editpost/{id}"
-@model Oz.Blog.Pages.EditBlogPost
+@model Oz.Blog.Pages.EditBlogPostModel
 
 @{
     ViewData["Title"] = "Edit blog post";
@@ -7,3 +7,34 @@
 
 <h1>Create blog post</h1>
 <hr />
+<div class="row">
+    <form method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        
+        <div class="form-group">
+            <input type="hidden" asp-for="UpdateBlogViewModel.Id"/>
+            
+            <div class="form-group">
+                <label asp-for="UpdateBlogViewModel.Title" class="control-label"></label>
+                <input asp-for="UpdateBlogViewModel.Title" class="form-control"/>
+                <span asp-validation-for="UpdateBlogViewModel.Title" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="UpdateBlogViewModel.Content" class="control-label"></label>
+                <textarea asp-for="UpdateBlogViewModel.Content" class="form-control"></textarea>
+                <span asp-validation-for="UpdateBlogViewModel.Content" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="UpdateBlogViewModel.AuthorSign" class="control-label"></label>
+                <input asp-for="UpdateBlogViewModel.AuthorSign" class="form-control"/>
+                <span asp-validation-for="UpdateBlogViewModel.AuthorSign" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Update post" class="btn btn-primary blogbtn" />
+            </div>
+        </div>
+    </form>
+</div>
