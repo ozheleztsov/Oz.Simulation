@@ -37,3 +37,7 @@ body {
     margin-top: 4em;
     font-size: small;
 }
+
+.margin-4 {
+    margin: 4px;
+}

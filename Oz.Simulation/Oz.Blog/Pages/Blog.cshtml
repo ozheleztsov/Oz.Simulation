@@ -13,10 +13,15 @@
 else
 {
     <div class="row">
+        <a asp-page="Index">Return</a>
         <div class="row h1">@Model.Blog.Title</div>
-        <div class="row margin-bottom-20">
-            <div class="row">Created on @Model.Blog.CreateDate.ToString(CultureInfo.InvariantCulture), modified on @Model.Blog.ModifiedDate.ToString(CultureInfo.InvariantCulture)</div>
-            <div class="row">@Html.Raw(Model.Blog.Content.Replace("\r\n", "<br />"))</div>
+        <div class="row margin-bottom-20 margin-top-8">
+            <div class="row">
+                <span>
+                    Created on <i>@(Model.Blog.CreateDate.ToString(CultureInfo.InvariantCulture))</i>, modified on <i>@(Model.Blog.ModifiedDate.ToString(CultureInfo.InvariantCulture))</i>
+                </span>
+            </div>
+            <div class="row margin-top-8">@Html.Raw(Model.Blog.Content.Replace("\r\n", "<br />"))</div>
             <div class="row">@Model.Blog.AuthorSign</div>
             <div class="row">
                 @if (Model.Blog.Annotations.Any())
